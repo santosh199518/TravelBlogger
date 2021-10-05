@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:title="Home"
+            android:id="@+id/homeID"
+            android:icon="@drawable/ic_home"/>
+
+        <item
+            android:title="SETTINGS"
+            android:id="@+id/settingID"
+            android:icon="@drawable/ic_setting"/>
+
+    </group>
+    <item android:title="Communicate">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:title="ABOUT US"
+                    android:id="@+id/aboutID"
+                    android:icon="@drawable/ic_about"/>
+                <item
+                    android:title="FEEDBACK"
+                    android:id="@+id/feedbackID"
+                    android:icon="@drawable/ic_feedback"/>
+                <item
+                    android:title="Share"
+                    android:id="@+id/shareID"
+                    android:icon="@drawable/ic_share"/>
+            </group>
+        </menu>
+    </item>
+    <item android:title="Exit">
+        <menu>
+            <group>
+                <item
+                    android:title="Logout"
+                    android:id="@+id/logoutID"
+                    android:icon="@drawable/ic_logout"/>
+            </group>
+        </menu>
+    </item>
+
+
+</menu>
