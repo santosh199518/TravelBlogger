@@ -43,7 +43,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         setContentView(R.layout.activity_login_page);
 
 
-//        checkUserStatus();
+        checkUserStatus();
         initializeViews();
         GoogleSignInOptions gso= new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -82,13 +82,12 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
     //To allow user to sign-in if they have log-out or have already created an account.
     public void signIn(){
-        UserData user = new UserData().getUserDataFromDatabase(email.getText().toString(), password.getText().toString(),getApplicationContext());
+        UserData user = UserData.getUserDataFromDatabase(email.getText().toString(), password.getText().toString(),getApplicationContext());
         if(user != null){
-            Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-            mainActivity.putExtra("user data",user);
+            Intent mainActivity = new Intent(this, MainActivity.class);
+            mainActivity.putExtra("user data", user);
             startActivity(mainActivity);
             finish();
-
         }
         else Toast.makeText(getApplicationContext(), "User and Password doesn't matches.",Toast.LENGTH_SHORT).show();
     }
@@ -124,10 +123,8 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                     @Override
                     public void run() {
                         try {
-                            photo[0] = Picasso.get().load(personPhoto).placeholder(R.drawable.ic_person).get();
-                            try{
-                                photo[0] = getBitmapFromURL(personPhoto.toString());
-                            }catch(Exception e){}
+                            photo[0] = getBitmapFromURL(personPhoto.toString());
+                            if (photo[0] == null) photo[0] = Picasso.get().load(personPhoto).placeholder(R.drawable.ic_person).get();
                         } catch (IOException e) {
                             photo[0] = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_add_photo);
                         }
@@ -135,7 +132,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 });
                 t.start();
                 UserData user = new UserData(personName, "password", personEmail, photo[0]);
-//                user.uploadToDatabase(getApplicationContext());
+//                DBHelper.uploadToDatabase(getApplicationContext());
                 Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
                 mainActivity.putExtra("user data", user);
                 startActivity(mainActivity);
@@ -168,25 +165,20 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
         if(c.getCount() != 0){
             c.moveToFirst();
-            UserData user = new UserData();
-            user.setUsername(c.getString(c.getColumnIndex(DBHelper.name)));
-            user.setEmail(c.getString(c.getColumnIndex(DBHelper.email)));
-            user.setPassword(c.getString(c.getColumnIndex(DBHelper.password)));
-            user.setPhoto(user.getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo))));
-
+            UserData user = new UserData(c.getString(c.getColumnIndex(DBHelper.name)),
+                    c.getString(c.getColumnIndex(DBHelper.password)),
+                    c.getString(c.getColumnIndex(DBHelper.email)),
+                    UserData.getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo))));
+            c.close();
             Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
             mainActivity.putExtra("user data", user);
-            c.close();
-            try {
-                startActivity(mainActivity);
-            }catch (Exception e) {
-                Log.d("presignin",e.getMessage());
-            }
+            startActivity(mainActivity);
             finish();
+
         }
     }
 
-    Bitmap getBitmapFromURL(String src) {
+    public Bitmap getBitmapFromURL(String src) {
         try {
             URL url = new URL(src);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();

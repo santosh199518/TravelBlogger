@@ -1,12 +1,13 @@
 package com.example.travelblogger;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 
@@ -43,11 +44,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public Cursor getTable(String table_name) {
-        String query = "SELECT * FROM "+table_name;
-
-        return this.getReadableDatabase().rawQuery(query,null);
-    }
 
 
 }

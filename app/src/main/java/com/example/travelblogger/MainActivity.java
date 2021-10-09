@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView photo=header.findViewById(R.id.photo_iv);
         photo.setImageBitmap(user.getPhoto());
         getSupportFragmentManager().beginTransaction().replace(R.id.fl,new MainFragment()).commit();
+
         nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {

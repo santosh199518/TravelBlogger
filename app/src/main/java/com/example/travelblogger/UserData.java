@@ -7,19 +7,22 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 
 public class UserData implements Serializable {
 
     private String username, password, email;
-    private Bitmap photo;
+    private byte[] photo;
 
-    UserData( String username, String password, String email, Bitmap photo){
+    UserData(String username, String password, String email, Bitmap photo){
         this.username = capitalize(username);
         this.password = password;
         this.email = email;
-        this.photo=photo;
+        this.photo = getBitmapAsByteArray(photo);
     }
 
     UserData(){}
@@ -49,87 +52,76 @@ public class UserData implements Serializable {
     }
 
     public Bitmap getPhoto() {
-        return photo;
+        return getBitmapFromByteArray(photo);
     }
 
     public void setPhoto(Bitmap photo) {
-        this.photo = photo;
+        this.photo = getBitmapAsByteArray(photo);
     }
 
-    UserData getUserDataFromDatabase(String email, String password, Context context){
-        DBHelper helper = new DBHelper(context);
-        SQLiteDatabase db=helper.getReadableDatabase();
-        Cursor c= db.rawQuery("SELECT *"+" FROM "+DBHelper.login_table_name+" where "+
-                DBHelper.email+"='"+email+"'",null);
-        db.execSQL("UPDATE "+DBHelper.login_table_name+" SET "+DBHelper.signed_in+"='True' WHERE "+DBHelper.email+"='"+email+"'");
-        c.moveToFirst();
-        if(c.getCount()!=0 && c.getString(c.getColumnIndex(DBHelper.password)).equals(password)){
-            UserData user = new UserData();
-            user.setEmail(email);
-            user.setPassword(password);
-            user.setUsername(c.getString(c.getColumnIndex(DBHelper.name)));
-            Bitmap pic=getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo)));
-            user.setPhoto(pic);
-            c.close();
-            return user;
-        }
-        c.close();
-        return null;
-
-    }
-
-    public byte[] getBitmapAsByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
-        return outputStream.toByteArray();
-    }
-
-    public Bitmap getBitmapFromByteArray(byte[] byteArray){
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-    }
-
-    public boolean uploadUserDataToDatabase(Context context){
-        DBHelper helper = new DBHelper(context);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        ContentValues data = new ContentValues();
-        if (isUserAvailable(context)) {
-            data.put(DBHelper.name, username);
-            data.put(DBHelper.password, password);
-            data.put(DBHelper.email, email);
-            data.put(DBHelper.photo, getBitmapAsByteArray(photo));
-            data.put(DBHelper.signed_in, "False");
-        }
-        return db.insert(DBHelper.login_table_name, null, data) != -1;
-    }
-
-    public boolean isUserAvailable(Context context){
-        DBHelper helper=new DBHelper(context);
-        Cursor c=helper.getTable(DBHelper.login_table_name);
-        if(c.getCount()==0) return true;
-        c.moveToFirst();
-        do{
-            if(c.getString(c.getColumnIndex(DBHelper.email)).equals(email)) {
-                Toast.makeText(context, "Email Already Exits", Toast.LENGTH_SHORT).show();
-                c.close();
-                return false;
-            }
-        }while(c.moveToNext());
-        c.close();
-        return true;
-    }
-
-    void logout(Context context){
-        DBHelper helper = new DBHelper(context);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("UPDATE "+DBHelper.login_table_name+" SET "+DBHelper.signed_in+" = 'False' WHERE "+DBHelper.email+"='"+email+"'");
-    }
-    public String capitalize(String str){
+    public String capitalize(@NonNull String str){
         String[] sub_strs = str.split(" ");
         String result="";
         for (String sub_str : sub_strs) {
             result = sub_str.substring(0, 1).toUpperCase() + sub_str.substring(1).toLowerCase() + " ";
         }
         return result;
+    }
+
+    public static boolean hasUser(String email, String password, Context context){
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db=helper.getReadableDatabase();
+        Cursor c= db.rawQuery("SELECT *"+" FROM "+ DBHelper.login_table_name+" where "+
+                DBHelper.email+"='"+email+"' AND "+ DBHelper.password+ "= '"+password+"'",null);
+        boolean result = c.getCount() !=0;
+        if (result) c.close();
+        return result;
+    }
+
+    public boolean uploadUserDataToDatabase(Context context){
+        if (hasUser(email,password, context)) {
+            Toast.makeText(context, "User Already Exists", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues data = new ContentValues();
+        data.put(DBHelper.name, username);
+        data.put(DBHelper.password, password);
+        data.put(DBHelper.email, email);
+        data.put(DBHelper.photo, photo);
+        data.put(DBHelper.signed_in, "False");
+        return db.insert(DBHelper.login_table_name, null, data) != -1;
+    }
+
+    public static UserData getUserDataFromDatabase(String email, String password, Context context){
+        if (!hasUser(email,password, context)) return null;
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db=helper.getReadableDatabase();
+        Cursor c= db.rawQuery("SELECT *"+" FROM "+ DBHelper.login_table_name+" where "+
+                DBHelper.email+"='"+email+"'",null);
+        c.moveToFirst();
+        Bitmap pic = getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo)));
+        UserData data = new UserData(c.getString(c.getColumnIndex(DBHelper.name)), password, email, pic);
+        c.close();
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
+        return data;
+    }
+
+    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
+    }
+
+    public static Bitmap getBitmapFromByteArray(byte[] byteArray){
+        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+    }
+
+    void logout(Context context){
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.execSQL("UPDATE "+DBHelper.login_table_name+" SET "+ DBHelper.signed_in+" = 'False' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
 }
