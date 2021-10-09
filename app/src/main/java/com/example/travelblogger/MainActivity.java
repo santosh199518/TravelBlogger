@@ -20,25 +20,27 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
     DrawerLayout obj;
     ActionBarDrawerToggle abdt;
+    UserData user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        user = (UserData) getIntent().getSerializableExtra("user data");
         obj=findViewById(R.id.main_drawer);
         abdt=new ActionBarDrawerToggle(this,obj,R.string.open,R.string.close);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         obj.addDrawerListener(abdt);
         abdt.syncState();
+
         logic();
     }
 
     void logic() {
         NavigationView nv=findViewById(R.id.nav_view);
         View header=nv.getHeaderView(0);
-        UserData user = (UserData) getIntent().getSerializableExtra("user data");
         TextView name=header.findViewById(R.id.username_tv);
         name.setText(user.getUsername());
         TextView email=header.findViewById(R.id.email_tv);
@@ -100,4 +102,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

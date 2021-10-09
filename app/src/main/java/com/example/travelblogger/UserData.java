@@ -22,7 +22,7 @@ public class UserData implements Serializable {
         this.username = capitalize(username);
         this.password = password;
         this.email = email;
-        this.photo = getBitmapAsByteArray(photo);
+        if (photo!=null) this.photo = getBitmapAsByteArray(photo);
     }
 
     UserData(){}
@@ -63,7 +63,7 @@ public class UserData implements Serializable {
         String[] sub_strs = str.split(" ");
         String result="";
         for (String sub_str : sub_strs) {
-            result = sub_str.substring(0, 1).toUpperCase() + sub_str.substring(1).toLowerCase() + " ";
+            result += sub_str.substring(0, 1).toUpperCase() + sub_str.substring(1).toLowerCase() + " ";
         }
         return result;
     }
@@ -91,7 +91,9 @@ public class UserData implements Serializable {
         data.put(DBHelper.email, email);
         data.put(DBHelper.photo, photo);
         data.put(DBHelper.signed_in, "False");
-        return db.insert(DBHelper.login_table_name, null, data) != -1;
+        boolean result = db.insert(DBHelper.login_table_name, null, data) != -1;
+        if (result) db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
+        return result;
     }
 
     public static UserData getUserDataFromDatabase(String email, String password, Context context){
@@ -115,6 +117,7 @@ public class UserData implements Serializable {
     }
 
     public static Bitmap getBitmapFromByteArray(byte[] byteArray){
+        if(byteArray==null) return null;
         return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 

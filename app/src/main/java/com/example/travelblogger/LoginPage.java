@@ -6,12 +6,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.MainThread;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -27,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 public class LoginPage extends AppCompatActivity implements View.OnClickListener {
 
@@ -43,7 +47,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         setContentView(R.layout.activity_login_page);
 
 
-        checkUserStatus();
+//        checkUserStatus();
         initializeViews();
         GoogleSignInOptions gso= new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -117,29 +121,18 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 String personName = acct.getDisplayName();
                 String personEmail = acct.getEmail();
                 Uri personPhoto = acct.getPhotoUrl();
-                Log.d("google_uri",personPhoto.toString());
-                final Bitmap[] photo = new Bitmap[1];
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            photo[0] = getBitmapFromURL(personPhoto.toString());
-                            if (photo[0] == null) photo[0] = Picasso.get().load(personPhoto).placeholder(R.drawable.ic_person).get();
-                        } catch (IOException e) {
-                            photo[0] = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_add_photo);
-                        }
-                    }
-                });
-                t.start();
-                UserData user = new UserData(personName, "password", personEmail, photo[0]);
-//                DBHelper.uploadToDatabase(getApplicationContext());
-                Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                DownloadImage download = new DownloadImage();
+                download.execute(personPhoto.toString());
+                Bitmap photo = download.get();
+                UserData user = new UserData(personName, null, personEmail, photo);
+                //user.uploadUserDataToDatabase(getApplicationContext());
+                Intent mainActivity = new Intent(getApplicationContext(), CreateUserPage.class);
                 mainActivity.putExtra("user data", user);
                 startActivity(mainActivity);
                 finish();
             }
-        } catch (ApiException e) {
-            Log.d("Google_Account",e.getMessage());
+        } catch (ApiException | InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
     }
 
@@ -189,6 +182,14 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    class DownloadImage extends AsyncTask<String, Void, Bitmap>{
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            return getBitmapFromURL(strings[0]);
         }
     }
 }

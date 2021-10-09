@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WelcomePage"
+    android:orientation="vertical"
+    android:background="#40A33F">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:id="@+id/message"
+        android:text="Travel Blogger"
+        android:gravity="center_horizontal"
+        android:textStyle="bold"
+        android:textColor="#FFF"
+        android:layout_marginBottom="10dp"/>
+
+   <com.smarteist.autoimageslider.SliderView
+       android:layout_width="match_parent"
+       android:layout_height="0dp"
+       android:layout_weight="1"
+       android:id="@+id/slider_id"
+       app:sliderAnimationDuration="600"
+       app:sliderAutoCycleDirection="back_and_forth"
+       app:sliderIndicatorAnimationDuration="600"
+       app:sliderIndicatorEnabled="true"
+       app:sliderIndicatorGravity="center_horizontal|bottom"
+       app:sliderIndicatorOrientation="horizontal"
+       app:sliderIndicatorPadding="3dp"
+       app:sliderIndicatorRadius="2dp"
+       app:sliderIndicatorSelectedColor="@color/purple_700"
+       app:sliderIndicatorUnselectedColor="#FFF" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading... Please Wait!"
+        android:gravity="center_horizontal"
+        android:textColor="#FFF"
+        android:layout_marginBottom="20dp"
+        android:layout_margin="10dp"/>
+</LinearLayout>

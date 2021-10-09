@@ -33,6 +33,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
     ImageView photo;
     Bitmap userPic=null;
     Button create_user;
+    UserData user = new UserData();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_create_user_page);
 
         initializeView();
+        if (getIntent().hasExtra("user data")) FromGoogleSignIn();
     }
 
     @Override
@@ -63,7 +65,6 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
 
             case R.id.create_user:
                 if (checkCredentials()) {
-                    UserData user = new UserData();
                     user.setUsername(name.getText().toString());
                     user.setPassword(password.getText().toString());
                     user.setEmail(email.getText().toString());
@@ -71,6 +72,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
                     if (user.uploadUserDataToDatabase(getApplicationContext())) {
                         Toast.makeText(getApplicationContext(), "User Created Successfully", Toast.LENGTH_SHORT).show();
                         finish();
+                        goToMainActivity();
                     }
                     else Toast.makeText(getApplicationContext(), "Cannot create user", Toast.LENGTH_SHORT).show();
                 }
@@ -168,6 +170,13 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    public void FromGoogleSignIn(){
+        user = (UserData) getIntent().getSerializableExtra("user data");
+        name.setText(user.getUsername());
+        email.setText(user.getEmail());
+        userPic = user.getPhoto();
+        photo.setImageBitmap(userPic);
+    }
     public void initializeView(){
         name=findViewById(R.id.username);
         password=findViewById(R.id.password);
@@ -181,4 +190,17 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         upload_photo_tv.setOnClickListener(this);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this,LoginPage.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void goToMainActivity(){
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("user data", user);
+        startActivity(intent);
+    }
 }
