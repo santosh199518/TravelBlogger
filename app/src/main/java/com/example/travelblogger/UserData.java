@@ -61,11 +61,11 @@ public class UserData implements Serializable {
 
     public String capitalize(@NonNull String str){
         String[] sub_strs = str.split(" ");
-        String result="";
+        StringBuilder result= new StringBuilder();
         for (String sub_str : sub_strs) {
-            result += sub_str.substring(0, 1).toUpperCase() + sub_str.substring(1).toLowerCase() + " ";
+            result.append(sub_str.substring(0, 1).toUpperCase()).append(sub_str.substring(1).toLowerCase()).append(" ");
         }
-        return result;
+        return result.toString();
     }
 
     public static boolean hasUser(String email, String password, Context context){

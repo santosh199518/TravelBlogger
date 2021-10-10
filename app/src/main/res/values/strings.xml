@@ -21,4 +21,12 @@
     <string name="or">or</string>
     <string name="forget_password">Forget Password?</string>
     <string name="change_password">Change Password</string>
+    <string name="question_1">How was your experience with us?</string>
+    <string name="question_2">Please rate us in following?</string>
+    <string name="question_3">How good did we do in these aspects?</string>
+    <string name="ease_of_use">Ease of use</string>
+    <string name="quality">Quality</string>
+    <string name="design">Design</string>
+    <string name="redundant">Redundant</string>
+    <string name="submit">Submit</string>
 </resources>

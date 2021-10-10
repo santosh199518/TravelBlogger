@@ -22,6 +22,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String photo ="PHOTO";
     public static final String signed_in ="SIGNED_IN";
 
+    public static final String feedback_table_name ="Feedbacks";
+
+
     Context context;
     public DBHelper(Context context){
         super(context,db_name,null,1);
