@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_contact.xml" value="0.22552083333333334" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_location.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable/border_shadow.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/activity_create_user_page.xml" value="0.209375" />
@@ -11,8 +13,10 @@
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/activity_welcome_page.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/drawer_header_layout.xml" value="0.209375" />
-        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_feedback.xml" value="0.20948410630536737" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_about_us.xml" value="0.209375" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_feedback.xml" value="0.25" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_main.xml" value="0.209375" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_setting.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/imageview_layout.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/layout_for_places_rv.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/main_custom_rv.xml" value="0.209375" />

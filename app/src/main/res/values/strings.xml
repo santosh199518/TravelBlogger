@@ -29,4 +29,10 @@
     <string name="design">Design</string>
     <string name="redundant">Redundant</string>
     <string name="submit">Submit</string>
+    <string name="about_us_description">I am Santosh Mahato and I’ve been working on mobile app development from last year, while still studying at college. Had my own projects, coded mostly in Java and Python</string>
+    <string name="about_us">ABOUT US</string>
+    <string name="address">ADDRESS</string>
+    <string name="address_details">Gatthaghar-44811, Bhaktapur,\nBagmati Province, Nepal</string>
+    <string name="contact_details">Phone: (+977) 9808898892\nPhone: (+91) 8728822814\nEmail: win.santosh205618@gmail.com</string>
+    <string name="contact">CONTACT</string>
 </resources>

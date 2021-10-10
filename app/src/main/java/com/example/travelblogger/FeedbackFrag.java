@@ -1,6 +1,9 @@
 package com.example.travelblogger;
 
+import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,7 @@ public class FeedbackFrag extends Fragment {
 
     Button submit;
     RatingBar r1,r2,r3,r4,r5,r6;
+    Context context;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +29,12 @@ public class FeedbackFrag extends Fragment {
         return v;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
+
     private void initializeViewOn(View v) {
         submit = v.findViewById(R.id.submit_btn);
         r1=v.findViewById(R.id.ans1);
@@ -36,12 +46,14 @@ public class FeedbackFrag extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int ans1 = (int) r1.getRating();
-                int ans2 = (int) r2.getRating();
-                int sub_ans1 = (int) r3.getRating();
-                int sub_ans2 = (int) r4.getRating();
-                int sub_ans3 = (int) r5.getRating();
-                int sub_ans4 = (int) r6.getRating();
+                int []answers = new int[6];
+                answers[0] = (int) r1.getRating();
+                answers[1] = (int) r2.getRating();
+                answers[2] = (int) r3.getRating();
+                answers[3] = (int) r4.getRating();
+                answers[4] = (int) r5.getRating();
+                answers[5] = (int) r6.getRating();
+                DBHelper.updateFeedback(context, answers);
             }
         });
     }
