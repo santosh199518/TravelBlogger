@@ -48,7 +48,7 @@ public class WelcomePage extends AppCompatActivity {
     public UserData checkUserStatus(){
         DBHelper helper = new DBHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor c=db.rawQuery("SELECT * "+" FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
+        Cursor c=db.rawQuery("SELECT * FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
         UserData user = null;
         if(c.getCount() != 0){
             c.moveToFirst();

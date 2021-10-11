@@ -46,13 +46,13 @@ public class FeedbackFrag extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int []answers = new int[6];
-                answers[0] = (int) r1.getRating();
-                answers[1] = (int) r2.getRating();
-                answers[2] = (int) r3.getRating();
-                answers[3] = (int) r4.getRating();
-                answers[4] = (int) r5.getRating();
-                answers[5] = (int) r6.getRating();
+                double []answers = new double[6];
+                answers[0] = r1.getRating();
+                answers[1] = r2.getRating();
+                answers[2] = r3.getRating();
+                answers[3] = r4.getRating();
+                answers[4] = r5.getRating();
+                answers[5] = r6.getRating();
                 DBHelper.updateFeedback(context, answers);
             }
         });

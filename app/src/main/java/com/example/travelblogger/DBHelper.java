@@ -5,15 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.Toast;
-
-import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 public class DBHelper extends SQLiteOpenHelper {
 
+    //Name of Database
     public static final String db_name="Let's_Connect_DataBase";
+    //Login table name with it's columns name
     public static final String login_table_name ="Login_Credentials";
     public static final String name="NAME";
     public static final String password="PASSWORD";
@@ -22,6 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String photo ="PHOTO";
     public static final String signed_in ="SIGNED_IN";
 
+    //Feedback table name with it's columns name
     public static final String feedback_table_name ="Feedbacks";
     public static final String question1 = "EXPERIENCE_RATING";
     public static final String question2 = "APP_RATING";
@@ -29,6 +30,15 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String sub_question2 = "QUALITY";
     public static final String sub_question3 = "DESIGN";
     public static final String sub_question4 = "REDUNDANT";
+
+    //Places Details table name with it's columns name
+    public static final String places_table_name = "PLACES_DETAILS";
+    public static final String description = "DESCRIPTION";
+    public static final String speciality = "SPECIALITY";
+    public static final String location = "LOCATION";
+    public static final String rating = "RATING";
+    public static final String photos = "PHOTOS";
+    public static final String uploaded_by = "UPLOADED_BY";
 
     Context context;
     public DBHelper(Context context){
@@ -38,22 +48,34 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS "+login_table_name+
+        String query = "CREATE TABLE IF NOT EXISTS "+login_table_name+
                 "("+name +" TEXT NOT NULL, "+
                 password +" TEXT NOT NULL, "+
                 email +" TEXT UNIQUE NOT NULL,"+
                 id +" INTEGER PRIMARY KEY AUTOINCREMENT,"+
-                photo +" Blob , "+
-                signed_in +" TEXT NOT NULL)");
+                photo +" BLOB , "+
+                signed_in +" TEXT NOT NULL)";
+        db.execSQL(query);
 
-        db.execSQL("CREATE TABLE IF NOT EXISTS "+feedback_table_name+
+        query = "CREATE TABLE IF NOT EXISTS "+feedback_table_name+
                 "("+id +" INTEGER NOT NULL,"+
-                question1 +" INTEGER NOT NULL, "+
-                question2 +" INTEGER NOT NULL, "+
-                sub_question1 +" INTEGER NOT NULL, "+
-                sub_question2 +" INTEGER NOT NULL, "+
-                sub_question3 +" INTEGER NOT NULL, "+
-                sub_question4 +" INTEGER NOT NULL) ");
+                question1 +" DOUBLE NOT NULL, "+
+                question2 +" DOUBLE NOT NULL, "+
+                sub_question1 +" DOUBLE NOT NULL, "+
+                sub_question2 +" DOUBLE NOT NULL, "+
+                sub_question3 +" DOUBLE NOT NULL, "+
+                sub_question4 +" DOUBLE NOT NULL) ";
+        db.execSQL(query);
+
+        query = "CREATE TABLE IF NOT EXISTS "+places_table_name+
+                "("+name +" TEXT NOT NULL,"+
+                description +" TEXT NOT NULL, "+
+                speciality +" TEXT, "+
+                location +" TEXT NOT NULL, "+
+                rating +" DOUBLE , "+
+                photos +" BLOB NOT NULL, "+
+                uploaded_by +" INTEGER NOT NULL) ";
+        db.execSQL(query);
     }
 
     @Override
@@ -61,11 +83,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    static void updateFeedback(Context c, int []answers){
+    static void updateFeedback(Context c, double []answers){
         DBHelper helper = new DBHelper(c);
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor cur = db.rawQuery("SELECT ID FROM "+ login_table_name +" WHERE "+signed_in+" = 'True'",null);
-        int user_id = Integer.parseInt(cur.getString(cur.getColumnIndex(id)));
+        Cursor cur = db.rawQuery("SELECT * FROM "+ login_table_name +" WHERE "+signed_in+"='True'",null);
+        cur.moveToFirst();
+        int user_id = cur.getInt(cur.getColumnIndex(id));
+
         ContentValues values = new ContentValues();
         values.put(question1,answers[0]);
         values.put(question2,answers[1]);
@@ -73,11 +97,13 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(sub_question2,answers[3]);
         values.put(sub_question3,answers[4]);
         values.put(sub_question4,answers[5]);
-        cur = db.rawQuery("SELECT * FROM "+feedback_table_name+" WHERE ID ="+id,null);
+        cur = db.rawQuery("SELECT * FROM "+feedback_table_name+" WHERE ID ="+user_id,null);
+        cur.moveToFirst();
         if(cur.getCount() == 0){
             values.put(id,user_id);
-            if (db.insert(DBHelper.login_table_name, null, values) != -1)
-                Toast.makeText(c,"Thank You! for your valueable feedback.",Toast.LENGTH_SHORT).show();
+            Log.d("ratings", Arrays.toString(answers)+"ID: "+user_id);
+            if (db.insert(DBHelper.feedback_table_name, null, values) != -1)
+                Toast.makeText(c,"Thank You! for your valuable feedback.",Toast.LENGTH_SHORT).show();
         }
         else{
             db.execSQL("UPDATE "+ feedback_table_name+" SET "+

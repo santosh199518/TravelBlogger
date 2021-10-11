@@ -44,7 +44,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         return al.size();
     }
 
-    class DataHolder extends RecyclerView.ViewHolder {
+    static class DataHolder extends RecyclerView.ViewHolder {
         TextView name, location, description;
         ImageView photo;
         LinearLayout ll;
