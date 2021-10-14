@@ -36,6 +36,7 @@
                     android:layout_height="wrap_content"
                     android:numStars="5"
                     android:max="5"
+                    android:progressTint="#FFCC01"
                     android:id="@+id/ans1"/>
             </LinearLayout>
             <TextView
@@ -59,6 +60,7 @@
                     android:layout_gravity="center"
                     android:numStars="5"
                     android:max="5"
+                    android:progressTint="#FFCC01"
                     android:id="@+id/ans2" />
             </LinearLayout>
             <TextView
@@ -93,7 +95,8 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/sub_ans1"
                         android:numStars="5"
-                        android:max="5"/>
+                        android:max="5"
+                        android:progressTint="#FFCC01"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -112,7 +115,8 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/sub_ans2"
                         android:numStars="5"
-                        android:max="5"/>
+                        android:max="5"
+                        android:progressTint="#FFCC01"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -131,7 +135,8 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/sub_ans3"
                     android:numStars="5"
-                    android:max="5"/>
+                    android:max="5"
+                    android:progressTint="#FFCC01"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -150,7 +155,8 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/sub_ans4"
                     android:numStars="5"
-                    android:max="5"/>
+                    android:max="5"
+                    android:progressTint="#FFCC01"/>
                 </LinearLayout>
             </LinearLayout>
             <Button

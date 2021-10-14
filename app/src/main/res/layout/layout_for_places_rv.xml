@@ -1,48 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/ll">
-    <ImageView
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_weight="1"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_add_photo"
-        android:id="@+id/place_photo_id"/>
+    android:id="@+id/ll"
+    android:orientation="vertical">
+
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:id="@+id/ll1">
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:paddingStart="10dp"
+            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:textSize="20sp"
             android:text="Place Name"
+            android:textColor="@color/purple_700"
             android:id="@+id/name_id"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:text="Lotion of place"
-            android:id="@+id/location_id"/>
         <RatingBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:scaleX=".5"
-            android:scaleY=".5"
-            android:transformPivotX="0dp"
-            android:transformPivotY="0dp"
             android:isIndicator="true"
-            android:numStars="7"
+            style="?android:attr/ratingBarStyleIndicator"
+            android:numStars="5"
+            android:progressTint="#FFCC01"
             android:id="@+id/ratingbar_id"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:text="This is the description of that place."
-            android:id="@+id/description_id"/>
     </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll1"
+        android:textSize="12sp"
+        android:paddingStart="10dp"
+        android:text="Lotion of place"
+        android:textColor="#000000"
+        android:id="@+id/location_id"/>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_weight="1"
+        android:layout_below="@id/location_id"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_add_photo"
+        android:id="@+id/place_photo_id"/>
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:id="@+id/favourite_iv"
+        android:layout_below="@id/location_id"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/ic_heart"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/place_photo_id"
+        android:id="@+id/ll2">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Like"
+            android:id="@+id/like_btn"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:textColor="@color/purple_700"
+            android:backgroundTint="#FFF"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Comment"
+            android:id="@+id/comment_btn"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:textColor="@color/purple_700"
+            android:backgroundTint="#FFF"/>
+    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/ll2"
+        android:textSize="12sp"
+        android:text="This is the description of that place."
+        android:id="@+id/description_id"/>
 
-</LinearLayout>
+</RelativeLayout>

@@ -12,7 +12,10 @@ public class PlaceDetails implements Serializable {
     private String name, description, speciality;
     private String location;
     private float rating;
-    PlaceDetails(){ }
+    PlaceDetails(){
+        images = new ArrayList<>();
+        rating = 0;
+    }
     PlaceDetails(ArrayList <Bitmap> images, String name, String location, String description, String speciality, float rating){
         this.images = new ArrayList<>();
         for(Bitmap image : images){
@@ -38,6 +41,7 @@ public class PlaceDetails implements Serializable {
 
     public ArrayList <Bitmap> getImages() {
         ArrayList <Bitmap> images = new ArrayList<>();
+        if(images.size() == 0) return null;
         for(byte[] image : this.images){
             images.add(UserData.getBitmapFromByteArray(image));
         }
