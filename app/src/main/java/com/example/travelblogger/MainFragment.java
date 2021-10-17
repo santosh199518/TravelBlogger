@@ -1,5 +1,6 @@
 package com.example.travelblogger;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,6 +26,7 @@ public class MainFragment extends Fragment {
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
+
     }
 
     @Override
@@ -35,7 +37,8 @@ public class MainFragment extends Fragment {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent(getActivity(),AddPlacesActivity.class);
+                startActivity(intent);
             }
         });
         RecyclerView rv = v.findViewById(R.id.main_fragment_rv);

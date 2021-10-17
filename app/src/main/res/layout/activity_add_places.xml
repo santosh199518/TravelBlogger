@@ -1,57 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AddPlacesActivity"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
     android:background="#40A33F">
-
-    <com.smarteist.autoimageslider.SliderView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:id="@+id/places_photos"
-        app:sliderAnimationDuration="600"
-        app:sliderAutoCycleDirection="back_and_forth"
-        app:sliderIndicatorAnimationDuration="600"
-        app:sliderIndicatorEnabled="true"
-        app:sliderIndicatorGravity="center_horizontal|bottom"
-        app:sliderIndicatorOrientation="horizontal"
-        app:sliderIndicatorPadding="3dp"
-        app:sliderIndicatorRadius="2dp"
-        app:sliderIndicatorSelectedColor="@color/purple_700"
-        app:sliderIndicatorUnselectedColor="#FFF" />
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/place_name"
-        android:textSize="20sp"
-        android:hint="Name of Place"
-        android:gravity="center"/>
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/place_location"
-        android:textSize="20sp"
-        android:hint="Location of Place"
-        android:gravity="center"/>
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/place_speciality"
-        android:textSize="20sp"
-        android:hint="Speciality of Place"
-        android:gravity="center"/>
-    <EditText
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/place_description"
-        android:textSize="15sp"
-        android:hint="Description of Place"
-        android:gravity="center"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
-
-</LinearLayout>
+        <com.smarteist.autoimageslider.SliderView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/places_photos"
+            app:sliderAnimationDuration="600"
+            app:sliderAutoCycleDirection="back_and_forth"
+            app:sliderIndicatorAnimationDuration="600"
+            app:sliderIndicatorEnabled="true"
+            app:sliderIndicatorGravity="center_horizontal|bottom"
+            app:sliderIndicatorOrientation="horizontal"
+            app:sliderIndicatorPadding="3dp"
+            app:sliderIndicatorRadius="2dp"
+            app:sliderIndicatorSelectedColor="@color/purple_700"
+            app:sliderIndicatorUnselectedColor="#FFF" />
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_name"
+            android:textSize="20sp"
+            android:hint="Name of Place"
+            android:gravity="center"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_location"
+            android:textSize="20sp"
+            android:hint="Location of Place"
+            android:gravity="center"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_speciality"
+            android:textSize="20sp"
+            android:hint="Speciality of Place"
+            android:gravity="center"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_description"
+            android:textSize="15sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:hint="Description of Place"
+            android:gravity="center_vertical"/>
+        <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:progressTint="#FFCC01"
+            android:id="@+id/place_rating"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Comments"
+            android:id="@+id/place_comments"
+            android:textSize="20sp"
+            android:textColor="@color/white"/>
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/comment_rv"/>
+    </LinearLayout>
+</ScrollView>
