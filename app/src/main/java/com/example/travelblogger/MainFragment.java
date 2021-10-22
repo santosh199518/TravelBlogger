@@ -2,6 +2,8 @@ package com.example.travelblogger;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,21 +14,23 @@ import android.view.ViewGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainFragment extends Fragment {
 
+    private static final int ADD_PLACE_INTENT = 100;
     ArrayList<PlaceDetails> data;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         data=new ArrayList<>();
+        data.addAll(PlaceDetails.getPlaceDetailsFromDatabase(getActivity()));
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
         data.add(new PlaceDetails());
-
     }
 
     @Override
@@ -38,7 +42,8 @@ public class MainFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(),AddPlacesActivity.class);
-                startActivity(intent);
+                intent.putExtra("user data",((MainActivity) requireActivity()).user);
+                requireActivity().startActivity(intent);
             }
         });
         RecyclerView rv = v.findViewById(R.id.main_fragment_rv);
@@ -48,4 +53,5 @@ public class MainFragment extends Fragment {
         rv.setAdapter(adapter);
         return v;
     }
+
 }

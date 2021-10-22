@@ -35,4 +35,6 @@
     <string name="address_details">Gatthaghar-44811, Bhaktapur,\nBagmati Province, Nepal</string>
     <string name="contact_details">Phone: (+977) 9808898892\nPhone: (+91) 8728822814\nEmail: win.santosh205618@gmail.com</string>
     <string name="contact">CONTACT</string>
+    <string name="comment">Comment</string>
+    <string name="like">LIKE</string>
 </resources>

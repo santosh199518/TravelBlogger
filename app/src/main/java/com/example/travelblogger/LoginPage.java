@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
 public class LoginPage extends AppCompatActivity implements View.OnClickListener {
@@ -148,27 +149,6 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         signInButton.setOnClickListener(this);
         forgetPassword=findViewById(R.id.forget_password_tv);
         forgetPassword.setOnClickListener(this);
-    }
-
-    //To check weather any active user that have signed-in recently.
-    public void checkUserStatus(){
-        DBHelper helper = new DBHelper(this);
-        SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor c=db.rawQuery("SELECT * "+" FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
-
-        if(c.getCount() != 0){
-            c.moveToFirst();
-            UserData user = new UserData(c.getString(c.getColumnIndex(DBHelper.name)),
-                    c.getString(c.getColumnIndex(DBHelper.password)),
-                    c.getString(c.getColumnIndex(DBHelper.email)),
-                    UserData.getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo))));
-            c.close();
-            Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-            mainActivity.putExtra("user data", user);
-            startActivity(mainActivity);
-            finish();
-
-        }
     }
 
     public Bitmap getBitmapFromURL(String src) {

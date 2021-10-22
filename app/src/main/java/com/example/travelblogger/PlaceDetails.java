@@ -2,51 +2,58 @@ package com.example.travelblogger;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.net.Uri;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class PlaceDetails implements Serializable {
-    private ArrayList <byte[]> images;
-    private String name, description, speciality;
-    private String location;
+    private ArrayList <String> images;
+    private String name, description, location, comment;
+    private String[] speciality;
     private float rating;
+    private int likeCount = 0;
+
     PlaceDetails(){
+        name = "Name of Place";
+        description = "This is the description of that place";
+        location = "Kathmandu, Province 3, Nepal";
+        speciality = new String[]{"Hotel", "Natural", "Food and culture"};
         images = new ArrayList<>();
         rating = 0;
     }
-    PlaceDetails(ArrayList <Bitmap> images, String name, String location, String description, String speciality, float rating){
+    PlaceDetails(ArrayList <Uri> images, String name, String location, String description, String[] speciality, float rating, String comment){
         this.images = new ArrayList<>();
-        for(Bitmap image : images){
-            this.images.add(UserData.getBitmapAsByteArray(image));
+        if (images == null) images = new ArrayList<>();
+        for(Uri imageUri : images){
+            this.images.add(imageUri.toString());
         }
         this.name = name;
         this.location = location;
         this.description = description;
         this.speciality = speciality;
         this.rating = rating;
+        this.comment = comment;
     }
 
-    PlaceDetails(ArrayList <Bitmap> images,String name, String location, String description, float rating){
-        this.images = new ArrayList<>();
-        for(Bitmap image : images){
-            this.images.add(UserData.getBitmapAsByteArray(image));
-        }
-        this.name = name;
-        this.location = location;
-        this.description = description;
-        this.rating = rating;
-    }
 
-    public ArrayList <Bitmap> getImages() {
-        ArrayList <Bitmap> images = new ArrayList<>();
+    public ArrayList <Uri> getImages() {
+        ArrayList <Uri> images = new ArrayList<>();
         if(images.size() == 0) return null;
-        for(byte[] image : this.images){
-            images.add(UserData.getBitmapFromByteArray(image));
+        for(String image : this.images){
+            images.add(Uri.parse(image));
         }
         return images;
     }
+
+    public int getLikeCount() { return likeCount; }
+
+    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
 
     public String getName() { return name; }
 
@@ -54,14 +61,14 @@ public class PlaceDetails implements Serializable {
 
     public String getDescription() { return description; }
 
-    public String getSpeciality() { return speciality; }
+    public String[] getSpeciality() { return speciality; }
 
     public float getRating() { return rating; }
 
-    public void setImage(ArrayList <Bitmap> images) {
+    public void setImage(ArrayList <Uri> images) {
         this.images = new ArrayList<>();
-        for(Bitmap image : images){
-            this.images.add(UserData.getBitmapAsByteArray(image));
+        for(Uri image : images){
+            this.images.add(image.toString());
         }
     }
 
@@ -71,26 +78,64 @@ public class PlaceDetails implements Serializable {
 
     public void setDescription(String description) { this.description = description; }
 
-    public void setSpeciality(String speciality) { this.speciality = speciality; }
+    public void setSpeciality(String[] speciality) { this.speciality = speciality; }
 
     public void setRating(float rating) { this.rating = rating; }
 
-    public void addImage(Bitmap image) {this.images.add(UserData.getBitmapAsByteArray(image));}
+    public void addImage(Uri image) {this.images.add(image.toString());}
 
-    public boolean uploadToDatabase(Context context, int user_id){
+    public boolean uploadToDatabase(Context context, String userEmail){
         ContentValues data = new ContentValues();
         data.put(DBHelper.name, name);
         data.put(DBHelper.description, description);
-        data.put(DBHelper.speciality, speciality);
+        data.put(DBHelper.speciality, Arrays.toString(speciality));
         data.put(DBHelper.location, location);
         data.put(DBHelper.rating, rating);
-        data.put(DBHelper.uploaded_by, user_id);
-        for(byte[] photo : images){
-            data.put(DBHelper.photos, photo);
-        }
+        data.put(DBHelper.uploaded_by, userEmail);
+        data.put(DBHelper.like_count, likeCount);
+        String []imagesUri = new String[images.size()];
+        Collections.addAll(images,imagesUri);
+        data.put(DBHelper.photos, Arrays.toString(imagesUri));
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         return db.insert(DBHelper.places_table_name,null, data) != -1;
+    }
+
+    static ArrayList<PlaceDetails> getPlaceDetailsFromDatabase(Context context){
+        ArrayList <PlaceDetails> places = new ArrayList<>();
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c =db.rawQuery("SELECT * FROM "+DBHelper.places_table_name,null);
+        if(c.getCount() > 0){
+            do{
+                String str = c.getString(c.getColumnIndex(DBHelper.photos));
+                str = str.replace("[","").replace("]","");
+                ArrayList <Uri> photos = new ArrayList<>();
+                for(String photo: str.split(",")){
+                    photos.add(Uri.parse(photo));
+                }
+                str = c.getString(c.getColumnIndex(DBHelper.speciality));
+                str = str.replace("[","").replace("]","");
+                ArrayList<String> specialities_al = new ArrayList<>(Arrays.asList(str.split(",")));
+                String[] specialities = new String[specialities_al.size()];
+                Collections.addAll(specialities_al,specialities);
+                PlaceDetails place = new PlaceDetails(photos,
+                        c.getString(c.getColumnIndex(DBHelper.name)),
+                        c.getString(c.getColumnIndex(DBHelper.location)),
+                        c.getString(c.getColumnIndex(DBHelper.description)),
+                        specialities,
+                        c.getFloat(c.getColumnIndex(DBHelper.rating)),
+                        c.getString(c.getColumnIndex(DBHelper.comment)));
+                places.add(place);
+            }while(c.moveToNext());
+        }
+        return places;
+    }
+
+    public void updateLikeCountToDataBase(Context context){
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.execSQL("UPDATE "+ DBHelper.places_table_name+" SET "+DBHelper.like_count+" = "+likeCount+ " WHERE "+DBHelper.name+"='"+name+"'");
     }
 
 

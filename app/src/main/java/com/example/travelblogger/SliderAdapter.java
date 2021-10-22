@@ -1,18 +1,45 @@
 package com.example.travelblogger;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.annotation.AnyRes;
+import androidx.annotation.NonNull;
+
 import com.smarteist.autoimageslider.SliderViewAdapter;
+
+import java.util.ArrayList;
 
 
 public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapterViewHolder> {
 
-    private final int[] mSliderItems;
+
+    private final ArrayList <Uri> mSliderItems;
+    Context context;
     public SliderAdapter(Context context, int[] sliderDataArrayList) {
+        ArrayList <Uri> mSliderItems = new ArrayList<>();
+        for(int i:sliderDataArrayList){
+            mSliderItems.add(getUriToDrawable(context, i));
+        }
+        this.mSliderItems = mSliderItems;
+    }
+
+    public SliderAdapter(Context context, ArrayList <Uri> sliderDataArrayList) {
         this.mSliderItems = sliderDataArrayList;
+        this.context = context;
+    }
+
+    public Uri getUriToDrawable(@NonNull Context context, @AnyRes int drawableId) {
+        return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
+                + "://" + context.getResources().getResourcePackageName(drawableId)
+                + '/' + context.getResources().getResourceTypeName(drawableId)
+                + '/' + context.getResources().getResourceEntryName(drawableId) );
     }
 
     @Override
@@ -23,14 +50,12 @@ public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapter
 
     @Override
     public void onBindViewHolder(SliderAdapterViewHolder viewHolder, final int position) {
-
-        final int sliderItem = mSliderItems[position];
-        viewHolder.imageViewBackground.setImageResource(sliderItem);
+        viewHolder.imageViewBackground.setImageURI(mSliderItems.get(position));
     }
 
     @Override
     public int getCount() {
-        return mSliderItems.length;
+        return mSliderItems.size();
     }
 
     static class SliderAdapterViewHolder extends SliderViewAdapter.ViewHolder {

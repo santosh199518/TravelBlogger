@@ -21,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TravelBlogger">
         <activity
+            android:name=".ShowPlaceActivity"
+            android:exported="false" />
+        <activity
             android:name=".AddPlacesActivity"
             android:exported="false" />
         <activity

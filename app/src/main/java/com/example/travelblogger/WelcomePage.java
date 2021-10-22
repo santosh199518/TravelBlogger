@@ -1,12 +1,13 @@
 package com.example.travelblogger;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
+import androidx.appcompat.app.AppCompatActivity;
 import com.smarteist.autoimageslider.SliderView;
+import java.util.HashSet;
 
 public class WelcomePage extends AppCompatActivity {
 
@@ -17,10 +18,9 @@ public class WelcomePage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_page);
 
-        sliderView = findViewById(R.id.slider_id);
         SliderAdapter adapter = new SliderAdapter(this, images);
+        sliderView = findViewById(R.id.slider_id);
         sliderView.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-
         sliderView.setSliderAdapter(adapter);
         sliderView.setScrollTimeInSec(2);
         sliderView.setAutoCycle(true);
@@ -28,20 +28,20 @@ public class WelcomePage extends AppCompatActivity {
 
         Handler h=new Handler();
         UserData user = checkUserStatus();
-        if(user !=null) {
+        if(user != null) {
             h.postDelayed(() -> {
                 Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
                 mainActivity.putExtra("user data", user);
                 startActivity(mainActivity);
                 finish();
-            }, 8000);
+            }, 5000);
         }
         else{
             h.postDelayed(() -> {
                 Intent loginPage = new Intent(getApplicationContext(), LoginPage.class);
                 startActivity(loginPage);
                 finish();
-            }, 8000);
+            }, 5000);
         }
     }
 
@@ -56,6 +56,17 @@ public class WelcomePage extends AppCompatActivity {
                     c.getString(c.getColumnIndex(DBHelper.password)),
                     c.getString(c.getColumnIndex(DBHelper.email)),
                     UserData.getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo))));
+
+            c.moveToFirst();
+            String fav = c.getString(c.getColumnIndex(DBHelper.favouritePlaces));
+            HashSet<String> favouritePlaces = new HashSet<>();
+            if(fav != null) {
+                fav = fav.replace("[", "").replace("]", "");
+                for (String name : fav.split(",")) {
+                    favouritePlaces.add(name.trim());
+                }
+            }
+            user.favouritePlaces = favouritePlaces;
             c.close();
         }
         return user;

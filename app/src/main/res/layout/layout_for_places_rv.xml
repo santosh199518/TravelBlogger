@@ -2,8 +2,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,9 +13,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:paddingStart="10dp"
+            android:paddingEnd="5dp"
             android:gravity="center_vertical"
             android:layout_weight="1"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:text="Place Name"
             android:textColor="@color/purple_700"
             android:id="@+id/name_id"/>
@@ -33,15 +33,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/ll1"
-        android:textSize="12sp"
+        android:textSize="13sp"
         android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         android:text="Lotion of place"
         android:textColor="#000000"
         android:id="@+id/location_id"/>
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_weight="1"
         android:layout_below="@id/location_id"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_add_photo"
@@ -54,16 +54,41 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="10dp"
         android:src="@drawable/ic_heart"/>
+    <com.google.android.material.chip.ChipGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/place_speciality_cg"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/place_photo_id"
+        android:padding="10dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@id/place_speciality_cg"
+        android:textSize="12sp"
+        android:padding="5dp"
+        android:text="This is the description of that place."
+        android:id="@+id/description_id"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_below="@id/description_id"
+        android:background="@color/grey_400"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/place_photo_id"
+        android:layout_below="@id/description_id"
+        android:layout_marginTop="5dp"
         android:id="@+id/ll2">
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Like"
+            android:text="@string/like"
             android:id="@+id/like_btn"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
@@ -73,19 +98,23 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Comment"
+            android:text="@string/comment"
             android:id="@+id/comment_btn"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:textColor="@color/purple_700"
             android:backgroundTint="#FFF"/>
-    </LinearLayout>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@id/ll2"
-        android:textSize="12sp"
-        android:text="This is the description of that place."
-        android:id="@+id/description_id"/>
 
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_below="@id/ll2"
+        android:background="@color/grey_400"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginTop="5dp"
+        android:background="#40A33F"
+        android:layout_below="@id/ll2"/>
 </RelativeLayout>

@@ -13,10 +13,68 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_name"
+            android:textSize="20sp"
+            android:hint="Name of Place"
+            android:textColorHint="#FFFAFA"
+            android:textColor="#FFF"
+            android:gravity="center"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_location"
+            android:textSize="20sp"
+            android:hint="Location of Place"
+            android:textColorHint="#FFFAFA"
+            android:textColor="#FFF"
+            android:gravity="center"/>
+
+        <com.google.android.material.chip.ChipGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/place_speciality"
+            android:textSize="20sp"
+            android:hint="Speciality of Place"
+            android:textColorHint="#FFFAFA"
+            android:textColor="#FFF"
+            android:gravity="center"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="#FFF">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/place_description"
+                android:textSize="15sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:hint="Description of Place"
+                android:background="#FFF"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:progressTint="#FFCC01"
+            android:id="@+id/place_rating"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add photos"
+            android:id="@+id/add_photo_btn"/>
         <com.smarteist.autoimageslider.SliderView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/places_photos"
+            android:id="@+id/place_photos"
             app:sliderAnimationDuration="600"
             app:sliderAutoCycleDirection="back_and_forth"
             app:sliderIndicatorAnimationDuration="600"
@@ -27,52 +85,17 @@
             app:sliderIndicatorRadius="2dp"
             app:sliderIndicatorSelectedColor="@color/purple_700"
             app:sliderIndicatorUnselectedColor="#FFF" />
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/place_name"
-            android:textSize="20sp"
-            android:hint="Name of Place"
-            android:gravity="center"/>
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/place_location"
-            android:textSize="20sp"
-            android:hint="Location of Place"
-            android:gravity="center"/>
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/place_speciality"
-            android:textSize="20sp"
-            android:hint="Speciality of Place"
-            android:gravity="center"/>
-        <EditText
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/place_description"
-            android:textSize="15sp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:hint="Description of Place"
-            android:gravity="center_vertical"/>
-        <RatingBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:numStars="5"
-            android:progressTint="#FFCC01"
-            android:id="@+id/place_rating"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Comments"
-            android:id="@+id/place_comments"
-            android:textSize="20sp"
-            android:textColor="@color/white"/>
-        <ListView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/comment_rv"/>
+            android:layout_height="200dp"
+            android:background="#FFF"
+            android:hint="Your Experience">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/place_comment"
+                android:textSize="20sp"
+                android:background="#FFF"/>
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 </ScrollView>

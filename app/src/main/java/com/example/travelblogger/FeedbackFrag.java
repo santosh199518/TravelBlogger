@@ -26,6 +26,13 @@ public class FeedbackFrag extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_feedback, container, false);
         initializeViewOn(v);
+        float []feedbacks = DBHelper.getFeedback(context);
+        r1.setRating(feedbacks[0]);
+        r2.setRating(feedbacks[1]);
+        r3.setRating(feedbacks[2]);
+        r4.setRating(feedbacks[3]);
+        r5.setRating(feedbacks[4]);
+        r6.setRating(feedbacks[5]);
         return v;
     }
 
@@ -46,7 +53,7 @@ public class FeedbackFrag extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double []answers = new double[6];
+                float []answers = new float[6];
                 answers[0] = r1.getRating();
                 answers[1] = r2.getRating();
                 answers[2] = r3.getRating();
@@ -56,5 +63,7 @@ public class FeedbackFrag extends Fragment {
                 DBHelper.updateFeedback(context, answers);
             }
         });
+
+
     }
 }

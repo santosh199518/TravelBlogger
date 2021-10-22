@@ -21,6 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String id="ID";
     public static final String photo ="PHOTO";
     public static final String signed_in ="SIGNED_IN";
+    public static final String favouritePlaces = "FAVOURITE_PLACES";
 
     //Feedback table name with it's columns name
     public static final String feedback_table_name ="Feedbacks";
@@ -37,8 +38,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String speciality = "SPECIALITY";
     public static final String location = "LOCATION";
     public static final String rating = "RATING";
-    public static final String photos = "PHOTOS";
+    public static final String photos = "PHOTOS_URI";
     public static final String uploaded_by = "UPLOADED_BY";
+    public static final String like_count = "LIKE_COUNT";
+    public static final String comment = "COMMENT";
 
     Context context;
     public DBHelper(Context context){
@@ -54,6 +57,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 email +" TEXT UNIQUE NOT NULL,"+
                 id +" INTEGER PRIMARY KEY AUTOINCREMENT,"+
                 photo +" BLOB , "+
+                favouritePlaces+" TEXT ,"+
                 signed_in +" TEXT NOT NULL)";
         db.execSQL(query);
 
@@ -68,12 +72,14 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(query);
 
         query = "CREATE TABLE IF NOT EXISTS "+places_table_name+
-                "("+name +" TEXT NOT NULL,"+
+                "("+name +" TEXT PRIMARY KEY UNIQUE NOT NULL,"+
                 description +" TEXT NOT NULL, "+
                 speciality +" TEXT, "+
                 location +" TEXT NOT NULL, "+
                 rating +" DOUBLE , "+
-                photos +" BLOB NOT NULL, "+
+                photos +" TEXT ,"+
+                like_count + " INTEGER ,"+
+                comment + " TEXT ," +
                 uploaded_by +" INTEGER NOT NULL) ";
         db.execSQL(query);
     }
@@ -83,7 +89,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    static void updateFeedback(Context c, double []answers){
+    static void updateFeedback(Context c, float []answers){
         DBHelper helper = new DBHelper(c);
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor cur = db.rawQuery("SELECT * FROM "+ login_table_name +" WHERE "+signed_in+"='True'",null);
@@ -116,5 +122,23 @@ public class DBHelper extends SQLiteOpenHelper {
         cur.close();
     }
 
-
+    static float[] getFeedback(Context context){
+        float []feedbacks = new float[]{0, 0, 0, 0, 0, 0};
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT * FROM "+ login_table_name +" WHERE "+signed_in+"='True'",null);
+        cur.moveToFirst();
+        int user_id = cur.getInt(cur.getColumnIndex(id));
+        cur = db.rawQuery("SELECT * FROM "+feedback_table_name+" WHERE ID ="+user_id,null);
+        if (cur.getCount() != 0) {
+            cur.moveToFirst();
+            feedbacks[0] = cur.getFloat(cur.getColumnIndex(DBHelper.question1));
+            feedbacks[1] = cur.getFloat(cur.getColumnIndex(DBHelper.question2));
+            feedbacks[2] = cur.getFloat(cur.getColumnIndex(DBHelper.sub_question1));
+            feedbacks[3] = cur.getFloat(cur.getColumnIndex(DBHelper.sub_question2));
+            feedbacks[4] = cur.getFloat(cur.getColumnIndex(DBHelper.sub_question3));
+            feedbacks[5] = cur.getFloat(cur.getColumnIndex(DBHelper.sub_question4));
+        }
+        return feedbacks;
+    }
 }

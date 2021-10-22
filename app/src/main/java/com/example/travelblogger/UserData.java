@@ -12,17 +12,21 @@ import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class UserData implements Serializable {
 
     private String username, password, email;
     private byte[] photo;
+    HashSet<String> favouritePlaces;
 
     UserData(String username, String password, String email, Bitmap photo){
         this.username = capitalize(username);
         this.password = password;
         this.email = email;
         if (photo!=null) this.photo = getBitmapAsByteArray(photo);
+        favouritePlaces = new HashSet<>();
     }
 
     UserData(){}
@@ -96,6 +100,12 @@ public class UserData implements Serializable {
         return result;
     }
 
+    public void uploadFavouritePlacesToDatabase(Context context){
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+favouritePlaces.toString()+ "' WHERE "+DBHelper.email+"='"+email+"'");
+    }
+
     public static UserData getUserDataFromDatabase(String email, String password, Context context){
         if (!hasUser(email,password, context)) return null;
         DBHelper helper = new DBHelper(context);
@@ -103,8 +113,14 @@ public class UserData implements Serializable {
         Cursor c= db.rawQuery("SELECT *"+" FROM "+ DBHelper.login_table_name+" where "+
                 DBHelper.email+"='"+email+"'",null);
         c.moveToFirst();
+
         Bitmap pic = getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo)));
+        String fav = c.getString(c.getColumnIndex(DBHelper.favouritePlaces)).replace("[","").replace("]","");
+        HashSet <String> favouritePlaces = new HashSet<>();
+        for(String name: fav.split(","))    favouritePlaces.add(name.trim());
+
         UserData data = new UserData(c.getString(c.getColumnIndex(DBHelper.name)), password, email, pic);
+        data.favouritePlaces = favouritePlaces;
         c.close();
         db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
         return data;
