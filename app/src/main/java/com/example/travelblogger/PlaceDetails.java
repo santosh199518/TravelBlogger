@@ -3,9 +3,11 @@ package com.example.travelblogger;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class PlaceDetails implements Serializable {
+
     private ArrayList <String> images;
     private String name, description, location, comment;
     private String[] speciality;
@@ -31,6 +34,7 @@ public class PlaceDetails implements Serializable {
         this.images = new ArrayList<>();
         if (images == null) images = new ArrayList<>();
         for(Uri imageUri : images){
+            Log.d("ImageUri",imageUri.toString());
             this.images.add(imageUri.toString());
         }
         this.name = name;
@@ -65,6 +69,10 @@ public class PlaceDetails implements Serializable {
 
     public float getRating() { return rating; }
 
+    public String getComment() { return comment; }
+
+    public void setComment(String comment) { this.comment = comment; }
+
     public void setImage(ArrayList <Uri> images) {
         this.images = new ArrayList<>();
         for(Uri image : images){
@@ -93,9 +101,8 @@ public class PlaceDetails implements Serializable {
         data.put(DBHelper.rating, rating);
         data.put(DBHelper.uploaded_by, userEmail);
         data.put(DBHelper.like_count, likeCount);
-        String []imagesUri = new String[images.size()];
-        Collections.addAll(images,imagesUri);
-        data.put(DBHelper.photos, Arrays.toString(imagesUri));
+        data.put(DBHelper.photos, Arrays.toString(images.toArray()));
+        data.put(DBHelper.comment,comment);
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         return db.insert(DBHelper.places_table_name,null, data) != -1;
@@ -108,17 +115,21 @@ public class PlaceDetails implements Serializable {
         Cursor c =db.rawQuery("SELECT * FROM "+DBHelper.places_table_name,null);
         if(c.getCount() > 0){
             do{
-                String str = c.getString(c.getColumnIndex(DBHelper.photos));
-                str = str.replace("[","").replace("]","");
+                String str;
                 ArrayList <Uri> photos = new ArrayList<>();
-                for(String photo: str.split(",")){
-                    photos.add(Uri.parse(photo));
+                try {
+                    str = c.getString(c.getColumnIndex(DBHelper.photos));
+                    str = str.replace("[","").replace("]","");
+                    for(String photo: str.split(",")){
+                        photos.add(Uri.parse(photo));
+                    }
+                }catch (CursorIndexOutOfBoundsException e){
+                    Log.i("PlacesPhotos",e.getMessage());
                 }
+
                 str = c.getString(c.getColumnIndex(DBHelper.speciality));
                 str = str.replace("[","").replace("]","");
-                ArrayList<String> specialities_al = new ArrayList<>(Arrays.asList(str.split(",")));
-                String[] specialities = new String[specialities_al.size()];
-                Collections.addAll(specialities_al,specialities);
+                String[] specialities = str.split(",");
                 PlaceDetails place = new PlaceDetails(photos,
                         c.getString(c.getColumnIndex(DBHelper.name)),
                         c.getString(c.getColumnIndex(DBHelper.location)),
@@ -136,8 +147,7 @@ public class PlaceDetails implements Serializable {
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         db.execSQL("UPDATE "+ DBHelper.places_table_name+" SET "+DBHelper.like_count+" = "+likeCount+ " WHERE "+DBHelper.name+"='"+name+"'");
+        db.execSQL("UPDATE "+ DBHelper.places_table_name+" SET "+DBHelper.like_count+" = "+likeCount+ " WHERE "+DBHelper.name+"='"+name+"'");
     }
-
-
 
 }

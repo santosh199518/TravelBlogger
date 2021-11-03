@@ -13,6 +13,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //Name of Database
     public static final String db_name="Let's_Connect_DataBase";
+
     //Login table name with it's columns name
     public static final String login_table_name ="Login_Credentials";
     public static final String name="NAME";
@@ -22,6 +23,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String photo ="PHOTO";
     public static final String signed_in ="SIGNED_IN";
     public static final String favouritePlaces = "FAVOURITE_PLACES";
+    public static final String like_places = "LIKED_PLACES";
 
     //Feedback table name with it's columns name
     public static final String feedback_table_name ="Feedbacks";
@@ -58,6 +60,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 id +" INTEGER PRIMARY KEY AUTOINCREMENT,"+
                 photo +" BLOB , "+
                 favouritePlaces+" TEXT ,"+
+                like_places+" TEXT ,"+
                 signed_in +" TEXT NOT NULL)";
         db.execSQL(query);
 

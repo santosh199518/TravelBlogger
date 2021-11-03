@@ -1,10 +1,13 @@
 package com.example.travelblogger;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.squareup.picasso.Picasso;
 import java.io.IOException;
@@ -46,9 +50,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
-
-
-//        checkUserStatus();
+        
         initializeViews();
         GoogleSignInOptions gso= new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -58,7 +60,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.google_sign_in_button:
-                googleSignIn();
+                googleSignIn(v);
                 break;
 
             case R.id.custom_signin_button:
@@ -104,9 +106,23 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
     }
 
     //To allow user to sign in through google using google api.
-    public void googleSignIn(){
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+    public void googleSignIn(View v){
+        if (isNetworkConnected()){
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+        }
+        else {
+            Snackbar snackbar = Snackbar
+                    .make(v, "No Internet Connection", Snackbar.LENGTH_LONG)
+                    .setAction("Try Again", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            googleSignIn(v);
+                        }
+                    });
+            snackbar.show();
+        }
+
     }
 
     //Activity to change password if user forget it accidentally.
@@ -122,7 +138,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 String personName = acct.getDisplayName();
                 String personEmail = acct.getEmail();
                 Uri personPhoto = acct.getPhotoUrl();
-                DownloadImage download = new DownloadImage();
+                DownloadImage download = new DownloadImage(getApplicationContext());
                 download.execute(personPhoto.toString());
                 Bitmap photo = download.get();
                 UserData user = new UserData(personName, null, personEmail, photo);
@@ -164,12 +180,37 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
             return null;
         }
     }
+    public boolean isNetworkConnected(){
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
+    }
 
     class DownloadImage extends AsyncTask<String, Void, Bitmap>{
+        Context c;
+        DownloadImage(Context context){
+            c = context;
+        }
+        ProgressDialog pd;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd = new ProgressDialog(c);
+            pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pd.setTitle("Fetching data");
+        }
 
         @Override
         protected Bitmap doInBackground(String... strings) {
+            pd.show();
             return getBitmapFromURL(strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            pd.dismiss();
         }
     }
 }

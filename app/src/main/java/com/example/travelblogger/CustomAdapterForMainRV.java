@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.graphics.drawable.AnimatedVectorDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-
 import java.util.ArrayList;
 
 public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterForMainRV.DataHolder> {
@@ -40,17 +39,33 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
 
     @Override
     public void onBindViewHolder(@NonNull DataHolder holder, int position) {
-        PlaceDetails d1=al.get(position);
+        PlaceDetails d1 = al.get(position);
         holder.name.setText(d1.getName());
         holder.location.setText(d1.getLocation());
         holder.description.setText(d1.getDescription());
         if(d1.getImages() != null) holder.photo.setImageURI(d1.getImages().get(0));
         holder.rb.setRating(d1.getRating());
-        for(String value: d1.getSpeciality()){
-            Chip chip = (Chip) LayoutInflater.from(context).inflate(R.layout.custom_chip_view, null, false);
+
+        holder.cg.removeAllViews();
+        for(String title: d1.getSpeciality()){
+            Chip chip =(Chip) LayoutInflater.from(context).inflate(R.layout.custom_chip_view, null, false);
             chip.setCloseIconVisible(false);
-            chip.setText(value);
+            chip.setTextAlignment(Chip.TEXT_ALIGNMENT_TEXT_START);
+            chip.setText(title);
             holder.cg.addView(chip);
+        }
+
+        UserData user = ((MainActivity) context).user;
+
+        if(user.likedPlaces.contains(al.get(position).getName())){
+            holder.like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
+            holder.like.setTextColor(context.getResources().getColor(R.color.white));
+            holder.clicked = true;
+        }
+
+        if(user.favouritePlaces.contains(al.get(position).getName())){
+            holder.full = false;
+            holder.fillHeartAnimation();
         }
     }
 
@@ -65,6 +80,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         RatingBar rb;
         Button like, comment;
         ChipGroup cg;
+        Chip []chip = new Chip[5];
 
         AnimatedVectorDrawable emptyHeart;
         AnimatedVectorDrawable fillHeart;
@@ -91,7 +107,6 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
 
             favourite = itemView.findViewById(R.id.favourite_iv);
             favourite.setOnClickListener(this);
-
             cg =itemView.findViewById(R.id.place_speciality_cg);
         }
 
@@ -99,40 +114,36 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.favourite_iv:
-                    emptyHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_empty);
-                    fillHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_fill);
-                    AnimatedVectorDrawable drawable = full ? emptyHeart : fillHeart;
-                    favourite.setImageDrawable(drawable);
-                    drawable.start();
-                    full = !full;
-
+                    fillHeartAnimation();
                     UserData user = ((MainActivity) context).user;
                     if(full) {
                         user.favouritePlaces.add(al.get(getAdapterPosition()).getName());
-                        Toast.makeText(context, "Place added to Favourite List.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, al.get(getAdapterPosition()).getName()+" added to Favourite List.", Toast.LENGTH_SHORT).show();
                     }
                     else {
                         user.favouritePlaces.remove(al.get(getAdapterPosition()).getName());
-                        Toast.makeText(context, "Place removed from Favourite List.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, al.get(getAdapterPosition()).getName()+" removed from Favourite List.", Toast.LENGTH_SHORT).show();
                     }
                     user.uploadFavouritePlacesToDatabase(context);
                     break;
 
                 case R.id.like_btn:
                     int like_count = al.get(getAdapterPosition()).getLikeCount();
+                    UserData user1 = ((MainActivity) context).user;
                     if (!clicked) {
+                        user1.likedPlaces.add(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(++like_count);
                         like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
                         like.setTextColor(context.getResources().getColor(R.color.white));
-                        like.setText("LIKE ("+like_count+")");
                     }
                     else{
+                        user1.likedPlaces.remove(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(--like_count);
                         like.setBackgroundColor(context.getResources().getColor(R.color.white));
                         like.setTextColor(context.getResources().getColor(R.color.purple_700));
-                        if(like_count > 0) like.setText("LIKE ("+like_count+")");
                     }
                     clicked = !clicked;
+                    user1.uploadLikedPlacesToDatabase(context);
                     al.get(getAdapterPosition()).updateLikeCountToDataBase(context);
                     break;
 
@@ -146,7 +157,17 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
             }
         }
 
-//        To Goto ShowPlaceActivity
+        private void fillHeartAnimation() {
+
+            emptyHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_empty);
+            fillHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_fill);
+            AnimatedVectorDrawable drawable = full ? emptyHeart : fillHeart;
+            favourite.setImageDrawable(drawable);
+            drawable.start();
+            full = !full;
+        }
+
+        //        To Goto ShowPlaceActivity
         public void goToShowPlaceActivity(){
             Intent intent = new Intent(context, ShowPlaceActivity.class);
             intent.putExtra("place", al.get(getAdapterPosition()));

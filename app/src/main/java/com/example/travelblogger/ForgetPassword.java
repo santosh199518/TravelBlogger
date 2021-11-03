@@ -41,7 +41,7 @@ public class ForgetPassword extends AppCompatActivity implements View.OnClickLis
             String p = Objects.requireNonNull(newPassword.getText()).toString();
             String c = Objects.requireNonNull(confirmPassword.getText()).toString();
             String e = Objects.requireNonNull(email.getText()).toString();
-            String n = Objects.requireNonNull(name.getText()).toString();
+            String n = new UserData().capitalize(Objects.requireNonNull(name.getText()).toString());
             if (checkCredentials(p, c, e, n, db)) {
                 db.execSQL("UPDATE " + DBHelper.login_table_name + " SET " + DBHelper.password + " = '" + p + " ' WHERE " +
                         DBHelper.email + "='" + e + "' AND " + DBHelper.name + "='" + n);

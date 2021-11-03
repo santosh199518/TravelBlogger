@@ -15,7 +15,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
 
     SliderView placePhotos;
     RatingBar placeRating;
-    TextView placeName, placeLocation, placeDescription;
+    TextView placeName, placeLocation, placeDescription, placeComment;
     ChipGroup placeSpecialities;
     PlaceDetails place;
 
@@ -64,4 +64,9 @@ public class ShowPlaceActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

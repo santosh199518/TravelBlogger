@@ -67,6 +67,16 @@ public class WelcomePage extends AppCompatActivity {
                 }
             }
             user.favouritePlaces = favouritePlaces;
+            c.moveToFirst();
+            String like = c.getString(c.getColumnIndex(DBHelper.like_places));
+            HashSet<String> likedPlaces = new HashSet<>();
+            if(like != null) {
+                like = like.replace("[", "").replace("]", "");
+                for (String name : like.split(",")) {
+                    likedPlaces.add(name.trim());
+                }
+            }
+            user.likedPlaces = likedPlaces;
             c.close();
         }
         return user;

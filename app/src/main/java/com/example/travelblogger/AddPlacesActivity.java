@@ -3,8 +3,7 @@ package com.example.travelblogger;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.slidingpanelayout.widget.SlidingPaneLayout;
-
+import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,14 +18,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.Toast;
-
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.textfield.TextInputEditText;
-import com.smarteist.autoimageslider.SliderPager;
+import com.google.android.material.snackbar.Snackbar;
 import com.smarteist.autoimageslider.SliderView;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class AddPlacesActivity extends AppCompatActivity {
@@ -36,12 +31,13 @@ public class AddPlacesActivity extends AppCompatActivity {
     SliderView placePhotos;
     RatingBar placeRating;
     Button addPhotoBtn;
-    EditText placeName, placeLocation, placeSpeciality;
-    TextInputEditText placeDescription, placeComment;
+    EditText placeName, placeLocation, placeDescription, placeComment;
+    AppCompatMultiAutoCompleteTextView placeSpeciality;
     ChipGroup cg;
     UserData user;
     String []specialitiesName = {};
     int []specialitiesIcon = {};
+    ArrayList <PlaceDetails> places;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +45,15 @@ public class AddPlacesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_places);
 
         initializeView();
+        places = (ArrayList<PlaceDetails>) getIntent().getSerializableExtra("places_data");
+        Log.d("SizeOfArray", String.valueOf(places.size()));
         //For enabling cross button as home button
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+
     }
 
     @Override
@@ -72,6 +72,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                         }
                     }
                 }
+                Log.d("ImagesUri",imagesUri.toString());
                 SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(imagesUri));
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
                 placePhotos.setSliderAdapter(adapter);
@@ -99,6 +100,7 @@ public class AddPlacesActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
+
                 break;
             case R.id.done:
                 addPlace();
@@ -116,27 +118,59 @@ public class AddPlacesActivity extends AppCompatActivity {
                     placeSpeciality.getText().toString().split(" "),
                     placeRating.getRating(),
                     placeComment.getText().toString());
-            if(place.uploadToDatabase(getApplicationContext(),user.getEmail())) finish();
+            if(place.uploadToDatabase(getApplicationContext(),user.getEmail())) {
+                Intent data = new Intent();
+                data.putExtra("new_place",place);
+                setResult(RESULT_OK, data);
+                finish();
+            }
             else Toast.makeText(getApplicationContext(), "Sorry, Not able to Upload data",Toast.LENGTH_SHORT).show();
         }
     }
 
     boolean checkCredentials() {
-        if(placeName.getText().toString().equals("")){
-            Toast.makeText(getApplicationContext(),"Please Enter Name of place", Toast.LENGTH_SHORT).show();
+        String name = placeName.getText().toString();
+        boolean sameName = false;
+        int index = 0;
+        for(int i=0; i<places.size(); i++){
+            if(places.get(i).getName().equals(name)){
+                sameName = true;
+                index = i;
+            }
+        }
+        if(placeName.getText().toString().trim().isEmpty()){
+            placeName.setError("Shouldn't be empty");
+            placeName.requestFocus();
             return false;
         }
-        else if(placeLocation.getText().toString().equals("")){
-            Toast.makeText(getApplicationContext(),"Please Enter Location of place", Toast.LENGTH_SHORT).show();
+        else if(placeLocation.getText().toString().trim().isEmpty()){
+            placeLocation.setError("Shouldn't be empty");
+            placeLocation.requestFocus();
             return false;
         }
-        else if(placeDescription.getText().toString().equals("")){
-            Toast.makeText(getApplicationContext(),"Please write about place in description.", Toast.LENGTH_SHORT).show();
+        else if(placeDescription.getText().toString().trim().isEmpty()){
+            placeDescription.setError("Shouldn't be empty");
+            placeDescription.requestFocus();
             return false;
         }
-        else if(placeComment.getText().toString().equals("")){
-            Toast.makeText(getApplicationContext(),"Please share your experience.", Toast.LENGTH_SHORT).show();
+        else if(placeComment.getText().toString().trim().isEmpty()){
+            placeComment.setError("share your experience here");
+            placeComment.requestFocus();
+            Toast.makeText(getApplicationContext(),"", Toast.LENGTH_SHORT).show();
             return false;
+        }
+        else if(sameName) {
+            Snackbar message = Snackbar.make(placeName.getRootView(), "Name already registered", Snackbar.LENGTH_LONG);
+            int finalIndex = index;
+            message.setAction("SHOW", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent showPlaceActivity = new Intent(getApplicationContext(), ShowPlaceActivity.class);
+                    showPlaceActivity.putExtra("place",places.get(finalIndex));
+                    startActivity(showPlaceActivity);
+                }
+            });
+            message.show();
         }
         return true;
     }

@@ -19,7 +19,7 @@ public class UserData implements Serializable {
 
     private String username, password, email;
     private byte[] photo;
-    HashSet<String> favouritePlaces;
+    HashSet<String> favouritePlaces, likedPlaces;
 
     UserData(String username, String password, String email, Bitmap photo){
         this.username = capitalize(username);
@@ -27,6 +27,7 @@ public class UserData implements Serializable {
         this.email = email;
         if (photo!=null) this.photo = getBitmapAsByteArray(photo);
         favouritePlaces = new HashSet<>();
+        likedPlaces = new HashSet<>();
     }
 
     UserData(){}
@@ -104,6 +105,12 @@ public class UserData implements Serializable {
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+favouritePlaces.toString()+ "' WHERE "+DBHelper.email+"='"+email+"'");
+    }
+
+    public void uploadLikedPlacesToDatabase(Context context){
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.like_places+" = '"+likedPlaces.toString()+ "' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
     public static UserData getUserDataFromDatabase(String email, String password, Context context){

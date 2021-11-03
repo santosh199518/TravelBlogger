@@ -1,5 +1,7 @@
 package com.example.travelblogger;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -14,23 +16,26 @@ import android.view.ViewGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainFragment extends Fragment {
 
     private static final int ADD_PLACE_INTENT = 100;
-    ArrayList<PlaceDetails> data;
+    ArrayList <PlaceDetails> places;
+    CustomAdapterForMainRV adapter;
+    RecyclerView rv;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        data=new ArrayList<>();
-        data.addAll(PlaceDetails.getPlaceDetailsFromDatabase(getActivity()));
-        data.add(new PlaceDetails());
-        data.add(new PlaceDetails());
-        data.add(new PlaceDetails());
-        data.add(new PlaceDetails());
-        data.add(new PlaceDetails());
-        data.add(new PlaceDetails());
+
+        places =new ArrayList<>();
+        places.addAll(PlaceDetails.getPlaceDetailsFromDatabase(getActivity()));
+        places.add(new PlaceDetails());
+        places.add(new PlaceDetails());
+        places.add(new PlaceDetails());
+        places.add(new PlaceDetails());
+        places.add(new PlaceDetails());
+        places.add(new PlaceDetails());
+        adapter=new CustomAdapterForMainRV(getActivity(), places);
     }
 
     @Override
@@ -43,15 +48,24 @@ public class MainFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(),AddPlacesActivity.class);
                 intent.putExtra("user data",((MainActivity) requireActivity()).user);
-                requireActivity().startActivity(intent);
+                intent.putExtra("places_data", places);
+                getActivity().startActivityForResult(intent, ADD_PLACE_INTENT);
             }
         });
-        RecyclerView rv = v.findViewById(R.id.main_fragment_rv);
+        rv = v.findViewById(R.id.main_fragment_rv);
         LinearLayoutManager llm=new LinearLayoutManager(getActivity(),LinearLayoutManager.VERTICAL,false);
         rv.setLayoutManager(llm);
-        CustomAdapterForMainRV adapter=new CustomAdapterForMainRV(getActivity(),data);
         rv.setAdapter(adapter);
         return v;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == ADD_PLACE_INTENT && resultCode == RESULT_OK && data!=null){
+            PlaceDetails place = (PlaceDetails) data.getSerializableExtra("new_place");
+            places.add(place);
+            adapter.notifyItemInserted(places.indexOf(place));
+        }
+    }
 }

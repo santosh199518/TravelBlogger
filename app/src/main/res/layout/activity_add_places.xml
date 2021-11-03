@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-        <EditText
+        <androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/place_speciality"
@@ -45,20 +45,16 @@
             android:textColorHint="#FFFAFA"
             android:textColor="#FFF"
             android:gravity="center"/>
-        <com.google.android.material.textfield.TextInputLayout
+
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            android:background="#FFF">
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/place_description"
-                android:textSize="15sp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:hint="Description of Place"
-                android:background="#FFF"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:id="@+id/place_description"
+            android:textSize="15sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:hint="Description of Place"
+            android:background="#FFF"/>
 
         <RatingBar
             android:layout_width="wrap_content"
@@ -85,17 +81,13 @@
             app:sliderIndicatorRadius="2dp"
             app:sliderIndicatorSelectedColor="@color/purple_700"
             app:sliderIndicatorUnselectedColor="#FFF" />
-        <com.google.android.material.textfield.TextInputLayout
+
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:background="#FFF"
-            android:hint="Your Experience">
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/place_comment"
-                android:textSize="20sp"
-                android:background="#FFF"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="Your Experience"
+            android:id="@+id/place_comment"
+            android:textSize="20sp"
+            android:background="#FFF"/>
     </LinearLayout>
 </ScrollView>
