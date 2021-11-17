@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import androidx.annotation.AnyRes;
 import androidx.annotation.NonNull;
 
 import com.smarteist.autoimageslider.SliderViewAdapter;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -30,8 +32,17 @@ public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapter
         this.mSliderItems = mSliderItems;
     }
 
-    public SliderAdapter(Context context, ArrayList <Uri> sliderDataArrayList) {
-        this.mSliderItems = sliderDataArrayList;
+
+    public SliderAdapter(Context context, ArrayList <String> sliderDataArrayList) {
+        mSliderItems = new ArrayList<>();
+        for(String values: sliderDataArrayList)
+            mSliderItems.add(Uri.parse(values));
+        this.context = context;
+    }
+    public SliderAdapter(Context context, String[] sliderDataArrayList) {
+        mSliderItems = new ArrayList<>();
+        for(String values: sliderDataArrayList)
+            mSliderItems.add(Uri.parse(values));
         this.context = context;
     }
 
@@ -50,7 +61,8 @@ public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapter
 
     @Override
     public void onBindViewHolder(SliderAdapterViewHolder viewHolder, final int position) {
-        viewHolder.imageViewBackground.setImageURI(mSliderItems.get(position));
+        Picasso.get().load(mSliderItems.get(position)).placeholder(R.drawable.ic_add_photo).into(viewHolder.imageViewBackground);
+        Log.d("ImageUri", mSliderItems.get(position).toString());
     }
 
     @Override

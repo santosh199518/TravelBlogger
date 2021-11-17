@@ -42,6 +42,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String rating = "RATING";
     public static final String photos = "PHOTOS_URI";
     public static final String uploaded_by = "UPLOADED_BY";
+    public static final String uploaded_date = "UPLOADED_DATE";
     public static final String like_count = "LIKE_COUNT";
     public static final String comment = "COMMENT";
 
@@ -58,7 +59,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 password +" TEXT NOT NULL, "+
                 email +" TEXT UNIQUE NOT NULL,"+
                 id +" INTEGER PRIMARY KEY AUTOINCREMENT,"+
-                photo +" BLOB , "+
+                photo +" TEXT , "+
                 favouritePlaces+" TEXT ,"+
                 like_places+" TEXT ,"+
                 signed_in +" TEXT NOT NULL)";
@@ -83,13 +84,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 photos +" TEXT ,"+
                 like_count + " INTEGER ,"+
                 comment + " TEXT ," +
-                uploaded_by +" INTEGER NOT NULL) ";
+                uploaded_date +" TEXT NOT NULL, "+
+                uploaded_by +" TEXT NOT NULL) ";
         db.execSQL(query);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        db.execSQL("DROP TABLE "+login_table_name,null);
+        db.execSQL("DROP TABLE "+feedback_table_name,null);
+        db.execSQL("DROP TABLE "+places_table_name,null);
+        onCreate(db);
     }
 
     static void updateFeedback(Context c, float []answers){

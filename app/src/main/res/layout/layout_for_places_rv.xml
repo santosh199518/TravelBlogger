@@ -11,7 +11,7 @@
         android:id="@+id/ll1">
         <TextView
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:paddingStart="10dp"
             android:paddingEnd="5dp"
             android:gravity="center_vertical"
@@ -32,6 +32,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_location"
+        android:drawableTint="#0000FF"
+        android:drawablePadding="10dp"
         android:layout_below="@id/ll1"
         android:textSize="13sp"
         android:paddingStart="10dp"
@@ -41,9 +44,9 @@
         android:id="@+id/location_id"/>
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:layout_below="@id/location_id"
-        android:scaleType="fitCenter"
+        android:scaleType="centerCrop"
         android:src="@drawable/ic_add_photo"
         android:id="@+id/place_photo_id"/>
     <ImageView
@@ -67,8 +70,10 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_below="@id/place_speciality_cg"
+        android:textColor="#0000FF"
         android:textSize="12sp"
-        android:padding="5dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
         android:text="This is the description of that place."
         android:id="@+id/description_id"/>
 

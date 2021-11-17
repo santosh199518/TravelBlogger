@@ -2,18 +2,28 @@ package com.example.travelblogger;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -23,25 +33,20 @@ public class MainFragment extends Fragment {
     ArrayList <PlaceDetails> places;
     CustomAdapterForMainRV adapter;
     RecyclerView rv;
+    ProgressBar progress;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         places =new ArrayList<>();
-        places.addAll(PlaceDetails.getPlaceDetailsFromDatabase(getActivity()));
-        places.add(new PlaceDetails());
-        places.add(new PlaceDetails());
-        places.add(new PlaceDetails());
-        places.add(new PlaceDetails());
-        places.add(new PlaceDetails());
-        places.add(new PlaceDetails());
+        getPlaceDetailsFromFirebase(getActivity());
         adapter=new CustomAdapterForMainRV(getActivity(), places);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main, container, false);
+        progress = v.findViewById(R.id.progress);
         FloatingActionButton add = v.findViewById(R.id.add_fab);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,5 +72,25 @@ public class MainFragment extends Fragment {
             places.add(place);
             adapter.notifyItemInserted(places.indexOf(place));
         }
+    }
+
+    void getPlaceDetailsFromFirebase(Context context){
+        FirebaseDatabase.getInstance().getReference().child("Places Details").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot place : snapshot.getChildren()){
+                    places.add(place.getValue(PlaceDetails.class));
+                    Log.d("place name",place.getKey());
+                    adapter=new CustomAdapterForMainRV(getActivity(), places);
+                    rv.setAdapter(adapter);
+                    progress.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

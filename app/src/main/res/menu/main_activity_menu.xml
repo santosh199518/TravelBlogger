@@ -8,10 +8,10 @@
         app:showAsAction="always"
         android:id="@+id/connectivity"/>
     <item
-        android:title="Refresh"
+        android:title="Synchronize"
         android:icon="@drawable/ic_refresh"
         app:showAsAction="always"
-        android:id="@+id/refresh"/>
+        android:id="@+id/sync"/>
     <item
         android:title="Report"
         android:id="@+id/report"/>

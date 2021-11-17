@@ -56,12 +56,6 @@
             android:hint="Description of Place"
             android:background="#FFF"/>
 
-        <RatingBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:numStars="5"
-            android:progressTint="#FFCC01"
-            android:id="@+id/place_rating"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -89,5 +83,13 @@
             android:id="@+id/place_comment"
             android:textSize="20sp"
             android:background="#FFF"/>
+
+        <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:progressTint="#FFCC01"
+            android:id="@+id/place_rating"
+            android:layout_gravity="center_vertical"/>
     </LinearLayout>
 </ScrollView>

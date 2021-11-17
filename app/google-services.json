@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "882333902218",
+    "firebase_url": "https://travel-blogger-325914-default-rtdb.firebaseio.com",
+    "project_id": "travel-blogger-325914",
+    "storage_bucket": "travel-blogger-325914.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882333902218:android:02d1363f62f82c0d569473",
+        "android_client_info": {
+          "package_name": "com.example.travelblogger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "882333902218-g4e802a3d836ou5ue77j8003ardmn2u2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_65yFNPRhYYVpG_xGzhx9qD_wg74fp5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "882333902218-g4e802a3d836ou5ue77j8003ardmn2u2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

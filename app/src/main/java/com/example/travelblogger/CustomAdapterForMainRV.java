@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.graphics.drawable.AnimatedVectorDrawable;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +19,11 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterForMainRV.DataHolder> {
 
@@ -43,11 +48,13 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         holder.name.setText(d1.getName());
         holder.location.setText(d1.getLocation());
         holder.description.setText(d1.getDescription());
-        if(d1.getImages() != null) holder.photo.setImageURI(d1.getImages().get(0));
+        ArrayList<String> keySet = new ArrayList<>(d1.getImages().keySet());
+        if(!d1.getImages().isEmpty()) Picasso.get().load(d1.getImages().get(keySet.get(0))).placeholder(R.drawable.ic_add_photo).into(holder.photo);
         holder.rb.setRating(d1.getRating());
 
         holder.cg.removeAllViews();
-        for(String title: d1.getSpeciality()){
+
+        for(String title: d1.getSpeciality().values()){
             Chip chip =(Chip) LayoutInflater.from(context).inflate(R.layout.custom_chip_view, null, false);
             chip.setCloseIconVisible(false);
             chip.setTextAlignment(Chip.TEXT_ALIGNMENT_TEXT_START);
@@ -57,13 +64,13 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
 
         UserData user = ((MainActivity) context).user;
 
-        if(user.likedPlaces.contains(al.get(position).getName())){
+        if(Arrays.asList(user.likedPlaces).contains(al.get(position).getName())){
             holder.like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
             holder.like.setTextColor(context.getResources().getColor(R.color.white));
             holder.clicked = true;
         }
 
-        if(user.favouritePlaces.contains(al.get(position).getName())){
+        if(Arrays.asList(user.favouritePlaces).contains(al.get(position).getName())){
             holder.full = false;
             holder.fillHeartAnimation();
         }
@@ -117,11 +124,11 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                     fillHeartAnimation();
                     UserData user = ((MainActivity) context).user;
                     if(full) {
-                        user.favouritePlaces.add(al.get(getAdapterPosition()).getName());
+                        user.addFavouritePlace(al.get(getAdapterPosition()).getName());
                         Toast.makeText(context, al.get(getAdapterPosition()).getName()+" added to Favourite List.", Toast.LENGTH_SHORT).show();
                     }
                     else {
-                        user.favouritePlaces.remove(al.get(getAdapterPosition()).getName());
+                        user.removeFavouritePlace(al.get(getAdapterPosition()).getName());
                         Toast.makeText(context, al.get(getAdapterPosition()).getName()+" removed from Favourite List.", Toast.LENGTH_SHORT).show();
                     }
                     user.uploadFavouritePlacesToDatabase(context);
@@ -131,13 +138,13 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                     int like_count = al.get(getAdapterPosition()).getLikeCount();
                     UserData user1 = ((MainActivity) context).user;
                     if (!clicked) {
-                        user1.likedPlaces.add(al.get(getAdapterPosition()).getName());
+                        user1.addLikedPlace(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(++like_count);
                         like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
                         like.setTextColor(context.getResources().getColor(R.color.white));
                     }
                     else{
-                        user1.likedPlaces.remove(al.get(getAdapterPosition()).getName());
+                        user1.removeLikedPlace(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(--like_count);
                         like.setBackgroundColor(context.getResources().getColor(R.color.white));
                         like.setTextColor(context.getResources().getColor(R.color.purple_700));

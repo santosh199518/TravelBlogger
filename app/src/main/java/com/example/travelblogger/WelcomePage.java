@@ -7,7 +7,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 import com.smarteist.autoimageslider.SliderView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 public class WelcomePage extends AppCompatActivity {
 
@@ -55,28 +59,21 @@ public class WelcomePage extends AppCompatActivity {
             user = new UserData(c.getString(c.getColumnIndex(DBHelper.name)),
                     c.getString(c.getColumnIndex(DBHelper.password)),
                     c.getString(c.getColumnIndex(DBHelper.email)),
-                    UserData.getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo))));
+                    c.getString(c.getColumnIndex(DBHelper.photo)));
 
             c.moveToFirst();
             String fav = c.getString(c.getColumnIndex(DBHelper.favouritePlaces));
-            HashSet<String> favouritePlaces = new HashSet<>();
             if(fav != null) {
-                fav = fav.replace("[", "").replace("]", "");
-                for (String name : fav.split(",")) {
-                    favouritePlaces.add(name.trim());
-                }
+                user.favouritePlaces = fav;
             }
-            user.favouritePlaces = favouritePlaces;
+            else user.favouritePlaces = " ";
+
             c.moveToFirst();
             String like = c.getString(c.getColumnIndex(DBHelper.like_places));
-            HashSet<String> likedPlaces = new HashSet<>();
             if(like != null) {
-                like = like.replace("[", "").replace("]", "");
-                for (String name : like.split(",")) {
-                    likedPlaces.add(name.trim());
-                }
+                user.likedPlaces = like;
             }
-            user.likedPlaces = likedPlaces;
+            else user.likedPlaces = " ";
             c.close();
         }
         return user;

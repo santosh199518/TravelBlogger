@@ -1,41 +1,40 @@
 package com.example.travelblogger;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
-import com.squareup.picasso.Picasso;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Objects;
 
 public class LoginPage extends AppCompatActivity implements View.OnClickListener {
 
@@ -89,14 +88,47 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
     //To allow user to sign-in if they have log-out or have already created an account.
     public void signIn(){
-        UserData user = UserData.getUserDataFromDatabase(email.getText().toString(), password.getText().toString(),getApplicationContext());
+        UserData user = UserData.getUserDataFromDatabase(email.getText().toString(),
+                password.getText().toString(),getApplicationContext());
         if(user != null){
             Intent mainActivity = new Intent(this, MainActivity.class);
             mainActivity.putExtra("user data", user);
             startActivity(mainActivity);
             finish();
         }
-        else Toast.makeText(getApplicationContext(), "User and Password doesn't matches.",Toast.LENGTH_SHORT).show();
+        else if(isNetworkConnected()){
+            FirebaseAuth mAuth = FirebaseAuth.getInstance();
+            mAuth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString())
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                DatabaseReference df = FirebaseDatabase.getInstance().getReference()
+                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                df.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                                        UserData user = task.getResult().getValue(UserData.class);
+                                        if (user != null) {
+                                            user.uploadUserDataToDatabase(getApplicationContext());
+                                            Intent mainActivity = new Intent(LoginPage.this, MainActivity.class);
+                                            mainActivity.putExtra("user data", user);
+                                            startActivity(mainActivity);
+                                            finish();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        else if(!isNetworkConnected())
+            Toast.makeText(getApplicationContext(), "No Internet Access",Toast.LENGTH_SHORT).show();
     }
 
     //To allow user to create account for first time.
@@ -127,8 +159,31 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
     //Activity to change password if user forget it accidentally.
     private void forgetPassword() {
-        Intent changePasswordIntent = new Intent(this,ForgetPassword.class);
-        startActivity(changePasswordIntent);
+        String e = Objects.requireNonNull(email.getText()).toString();
+        if(e.trim().isEmpty()){
+            email.setError("Insert Email");
+            return;
+        }
+        else if(!Patterns.EMAIL_ADDRESS.matcher(e).matches()){
+            email.setError("Invalid Email");
+            return;
+        }
+        FirebaseAuth.getInstance().sendPasswordResetEmail(e).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()) {
+                    DBHelper helper = new DBHelper(getApplicationContext());
+                    SQLiteDatabase db = helper.getWritableDatabase();
+                    db.delete(DBHelper.login_table_name,DBHelper.email,new String[]{e});
+                    Toast.makeText(getApplicationContext(), "Password resent link send to " + e + " successfully.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
@@ -138,17 +193,14 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 String personName = acct.getDisplayName();
                 String personEmail = acct.getEmail();
                 Uri personPhoto = acct.getPhotoUrl();
-                DownloadImage download = new DownloadImage(getApplicationContext());
-                download.execute(personPhoto.toString());
-                Bitmap photo = download.get();
-                UserData user = new UserData(personName, null, personEmail, photo);
-                //user.uploadUserDataToDatabase(getApplicationContext());
+
+                UserData user = new UserData(personName, null, personEmail, personPhoto.toString());
                 Intent mainActivity = new Intent(getApplicationContext(), CreateUserPage.class);
                 mainActivity.putExtra("user data", user);
                 startActivity(mainActivity);
                 finish();
             }
-        } catch (ApiException | InterruptedException | ExecutionException e) {
+        } catch (ApiException e) {
             e.printStackTrace();
         }
     }
@@ -167,50 +219,10 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         forgetPassword.setOnClickListener(this);
     }
 
-    public Bitmap getBitmapFromURL(String src) {
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            return BitmapFactory.decodeStream(input);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
     public boolean isNetworkConnected(){
-
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
 
-    class DownloadImage extends AsyncTask<String, Void, Bitmap>{
-        Context c;
-        DownloadImage(Context context){
-            c = context;
-        }
-        ProgressDialog pd;
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pd = new ProgressDialog(c);
-            pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            pd.setTitle("Fetching data");
-        }
 
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-            pd.show();
-            return getBitmapFromURL(strings[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-            pd.dismiss();
-        }
-    }
 }

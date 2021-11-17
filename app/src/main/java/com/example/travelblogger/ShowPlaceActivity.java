@@ -5,11 +5,15 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.smarteist.autoimageslider.SliderView;
+
+import java.util.ArrayList;
 
 public class ShowPlaceActivity extends AppCompatActivity {
 
@@ -31,11 +35,17 @@ public class ShowPlaceActivity extends AppCompatActivity {
 
         initializeView();
         place = (PlaceDetails)getIntent().getSerializableExtra("place");
-        SliderAdapter adapter = new SliderAdapter(this, place.getImages());
+        SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(place.getImages().values()));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         placePhotos.setSliderAdapter(adapter);
+        placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+        placePhotos.setLayoutParams(params);
+        placePhotos.setScrollTimeInSec(2);
+        placePhotos.setAutoCycle(true);
+        placePhotos.startAutoCycle();
         placeName.setText(place.getName());
         placeLocation.setText(place.getLocation());
-        for(String value: place.getSpeciality()){
+        for(String value: place.getSpeciality().values()){
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_chip_view, null, false);
             chip.setCloseIconVisible(false);
             chip.setText(value);

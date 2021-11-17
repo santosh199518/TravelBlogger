@@ -4,33 +4,39 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 
-import java.io.ByteArrayOutputStream;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class UserData implements Serializable {
 
-    private String username, password, email;
-    private byte[] photo;
-    HashSet<String> favouritePlaces, likedPlaces;
+    private String username, password, email, imageUri;
+    String favouritePlaces, likedPlaces;
 
-    UserData(String username, String password, String email, Bitmap photo){
+    public UserData(String username, String password, String email, String imageUri, String favouritePlaces, String likedPlaces) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.imageUri = imageUri;
+        this.favouritePlaces = favouritePlaces;
+        this.likedPlaces = likedPlaces;
+    }
+    UserData(String username, String password, String email, String photo){
         this.username = capitalize(username);
         this.password = password;
         this.email = email;
-        if (photo!=null) this.photo = getBitmapAsByteArray(photo);
-        favouritePlaces = new HashSet<>();
-        likedPlaces = new HashSet<>();
+        if (photo!=null) this.imageUri = photo;
+        favouritePlaces = "";
+        likedPlaces = "";
     }
-
-    UserData(){}
+    UserData(){
+        favouritePlaces = "[]";
+        likedPlaces = "[]";
+    }
 
     public String getUsername() {
         return username;
@@ -56,13 +62,17 @@ public class UserData implements Serializable {
         this.email = email;
     }
 
-    public Bitmap getPhoto() {
-        return getBitmapFromByteArray(photo);
-    }
+    public String getImageUri() { return imageUri; }
 
-    public void setPhoto(Bitmap photo) {
-        this.photo = getBitmapAsByteArray(photo);
-    }
+    public void setImageUri(String imageUri) { this.imageUri = imageUri; }
+
+    public void addFavouritePlace(String value) {  }
+
+    public void removeFavouritePlace(String value) {  }
+
+    public void addLikedPlace(String value) {  }
+
+    public void removeLikedPlace(String value) {  }
 
     public String capitalize(@NonNull String str){
         String[] sub_strs = str.split(" ");
@@ -83,10 +93,9 @@ public class UserData implements Serializable {
         return result;
     }
 
-    public boolean uploadUserDataToDatabase(Context context){
+    public void uploadUserDataToDatabase(Context context){
         if (hasUser(email,password, context)) {
-            Toast.makeText(context, "User Already Exists", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
@@ -94,60 +103,57 @@ public class UserData implements Serializable {
         data.put(DBHelper.name, username);
         data.put(DBHelper.password, password);
         data.put(DBHelper.email, email);
-        data.put(DBHelper.photo, photo);
+        data.put(DBHelper.photo, imageUri);
         data.put(DBHelper.signed_in, "False");
         boolean result = db.insert(DBHelper.login_table_name, null, data) != -1;
         if (result) db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
-        return result;
     }
 
     public void uploadFavouritePlacesToDatabase(Context context){
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+favouritePlaces.toString()+ "' WHERE "+DBHelper.email+"='"+email+"'");
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+ favouritePlaces + "' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
     public void uploadLikedPlacesToDatabase(Context context){
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.like_places+" = '"+likedPlaces.toString()+ "' WHERE "+DBHelper.email+"='"+email+"'");
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.like_places+" = '"+ likedPlaces + "' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
     public static UserData getUserDataFromDatabase(String email, String password, Context context){
         if (!hasUser(email,password, context)) return null;
         DBHelper helper = new DBHelper(context);
-        SQLiteDatabase db=helper.getReadableDatabase();
+        SQLiteDatabase db = helper.getReadableDatabase();
         Cursor c= db.rawQuery("SELECT *"+" FROM "+ DBHelper.login_table_name+" where "+
                 DBHelper.email+"='"+email+"'",null);
         c.moveToFirst();
 
-        Bitmap pic = getBitmapFromByteArray(c.getBlob(c.getColumnIndex(DBHelper.photo)));
-        String fav = c.getString(c.getColumnIndex(DBHelper.favouritePlaces)).replace("[","").replace("]","");
-        HashSet <String> favouritePlaces = new HashSet<>();
-        for(String name: fav.split(","))    favouritePlaces.add(name.trim());
-
-        UserData data = new UserData(c.getString(c.getColumnIndex(DBHelper.name)), password, email, pic);
-        data.favouritePlaces = favouritePlaces;
+        UserData data = new UserData(c.getString(c.getColumnIndex(DBHelper.name)), password, email, c.getString(c.getColumnIndex(DBHelper.photo)));
+        data.favouritePlaces = c.getString(c.getColumnIndex(DBHelper.favouritePlaces)).replace("[","").replace("]","");
+        data.likedPlaces = c.getString(c.getColumnIndex(DBHelper.like_places)).replace("[","").replace("]","");
         c.close();
         db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
         return data;
     }
 
-    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
-        return outputStream.toByteArray();
-    }
-
-    public static Bitmap getBitmapFromByteArray(byte[] byteArray){
-        if(byteArray==null) return null;
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-    }
+//    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+//        return outputStream.toByteArray();
+//    }
+//
+//    public static Bitmap getBitmapFromByteArray(byte[] byteArray){
+//        if(byteArray==null) return null;
+//        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+//    }
 
     void logout(Context context){
+        FirebaseAuth.getInstance().signOut();
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         db.execSQL("UPDATE "+DBHelper.login_table_name+" SET "+ DBHelper.signed_in+" = 'False' WHERE "+DBHelper.email+"='"+email+"'");
     }
+
 
 }
