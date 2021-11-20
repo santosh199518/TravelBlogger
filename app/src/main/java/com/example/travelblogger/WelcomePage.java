@@ -5,7 +5,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.smarteist.autoimageslider.SliderView;
 
 import java.util.ArrayList;
@@ -16,7 +28,7 @@ import java.util.List;
 public class WelcomePage extends AppCompatActivity {
 
     SliderView sliderView;
-    int []images = {R.drawable.img_6, R.drawable.img_1, R.drawable.img_2, R.drawable.img_3, R.drawable.img_4, R.drawable.img_5 };
+    int []images = { R.drawable.img_2, R.drawable.img_3, R.drawable.img_4, R.drawable.img_5, R.drawable.img_6, R.drawable.img_1 };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,29 +43,67 @@ public class WelcomePage extends AppCompatActivity {
         sliderView.startAutoCycle();
 
         Handler h=new Handler();
-        UserData user = checkUserStatus();
-        if(user != null) {
-            h.postDelayed(() -> {
-                Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-                mainActivity.putExtra("user data", user);
-                startActivity(mainActivity);
-                finish();
-            }, 5000);
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if(uid!=null) {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(uid)
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            UserData user = snapshot.getValue(UserData.class);
+                            Task<DataSnapshot> getLikedTask =  FirebaseDatabase.getInstance().getReference()
+                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child("likedPlaces").get();
+                            Task <DataSnapshot> getFavouriteTask =  FirebaseDatabase.getInstance().getReference()
+                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child("favouritePlaces").get();
+                            do{
+                                Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                    }
+                                },1000);
+                            } while(!getFavouriteTask.isComplete() || !getLikedTask.isComplete());
+                            user.likedPlaces = (ArrayList<String>) getLikedTask.getResult().getValue();
+                            user.favouritePlaces = (ArrayList<String>) getFavouriteTask.getResult().getValue();
+                            Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                            mainActivity.putExtra("user data", user);
+                            startActivity(mainActivity);
+                            finish();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
         }
         else{
-            h.postDelayed(() -> {
-                Intent loginPage = new Intent(getApplicationContext(), LoginPage.class);
-                startActivity(loginPage);
-                finish();
-            }, 5000);
+            UserData user = checkUserStatus();
+            if (user != null) {
+                h.postDelayed(() -> {
+                    Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                    mainActivity.putExtra("user data", user);
+                    startActivity(mainActivity);
+                    finish();
+                }, 5000);
+            } else {
+                h.postDelayed(() -> {
+                    Intent loginPage = new Intent(getApplicationContext(), LoginPage.class);
+                    startActivity(loginPage);
+                    finish();
+                }, 5000);
+            }
         }
+
     }
 
     public UserData checkUserStatus(){
+        UserData user = null;
         DBHelper helper = new DBHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
-        UserData user = null;
         if(c.getCount() != 0){
             c.moveToFirst();
             user = new UserData(c.getString(c.getColumnIndex(DBHelper.name)),
@@ -63,17 +113,16 @@ public class WelcomePage extends AppCompatActivity {
 
             c.moveToFirst();
             String fav = c.getString(c.getColumnIndex(DBHelper.favouritePlaces));
-            if(fav != null) {
-                user.favouritePlaces = fav;
+            if(fav!=null) {
+                fav.replace("[","").replace("]","");
+                if(!fav.trim().isEmpty()) user.favouritePlaces.addAll(Arrays.asList(fav.split(",")));
             }
-            else user.favouritePlaces = " ";
-
             c.moveToFirst();
             String like = c.getString(c.getColumnIndex(DBHelper.like_places));
-            if(like != null) {
-                user.likedPlaces = like;
+            if(like!=null ) {
+                like.replace("[", "").replace("]", "");
+                if (!like.trim().isEmpty()) user.likedPlaces.addAll(Arrays.asList(like.split(",")));
             }
-            else user.likedPlaces = " ";
             c.close();
         }
         return user;

@@ -3,12 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_add_circle.xml" value="0.1" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_close.xml" value="0.22153846153846155" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_contact.xml" value="0.22552083333333334" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_delete.xml" value="0.2175925925925926" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_hotel.xml" value="0.22135416666666666" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_like.xml" value="0.1" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_location.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_offline.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_online.xml" value="0.22552083333333334" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_pin_offline.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_refresh.xml" value="0.22552083333333334" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-anydpi/ic_visible.xml" value="0.22153846153846155" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.22552083333333334" />
@@ -27,6 +31,7 @@
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/custom_chip_view.xml" value="0.1" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/drawer_header_layout.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_about_us.xml" value="0.209375" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_favourite_places.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_feedback.xml" value="0.25" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_main.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/fragment_setting.xml" value="0.209375" />
@@ -34,6 +39,7 @@
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/layout_for_places_comments.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/layout_for_places_rv.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/layout/main_custom_rv.xml" value="0.209375" />
+        <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/menu-v26/app_menu.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/menu/action_menu.xml" value="0.20885416666666667" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/menu/app_menu.xml" value="0.209375" />
         <entry key="..\:/Users/Santosh/AndroidStudioProjects/TravelBlogger/app/src/main/res/menu/main_activity_menu.xml" value="0.209375" />

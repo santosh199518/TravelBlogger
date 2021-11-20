@@ -9,6 +9,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,6 +33,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,6 +47,8 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+
+import okhttp3.internal.cache.DiskLruCache;
 
 public class MainActivity extends AppCompatActivity {
     private static final String CHANNEL_ID = "Notice";
@@ -96,8 +101,8 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.feedbackID:
                         f=new FeedbackFrag();
                         break;
-                    case R.id.settingID:
-                        f=new SettingFrag();
+                    case R.id.favourite_placesID:
+                        f=new FavouritePlacesFrag();
                         break;
                     case R.id.shareID:
                         Intent sendIntent = new Intent();
@@ -163,7 +168,10 @@ public class MainActivity extends AppCompatActivity {
         dr.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long count = snapshot.getChildrenCount();
+                long n=0;
                 for(PlaceDetails details: places){
+                    n++;
                     if(!snapshot.hasChild(details.getName())){
                         HashMap<String,String> imageUri = details.getImages();
                         StorageReference sf = FirebaseStorage.getInstance().getReference().child("Place Images");
@@ -197,6 +205,8 @@ public class MainActivity extends AppCompatActivity {
                                 });
                         }
                     }
+                    else if(count == n)
+                        Toast.makeText(getApplicationContext(), "No Data found to Upload", Toast.LENGTH_SHORT).show();
                 }
             }
 

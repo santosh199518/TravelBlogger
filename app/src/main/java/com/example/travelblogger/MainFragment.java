@@ -75,12 +75,13 @@ public class MainFragment extends Fragment {
     }
 
     void getPlaceDetailsFromFirebase(Context context){
-        FirebaseDatabase.getInstance().getReference().child("Places Details").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("Places Details").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                places =new ArrayList<>();
                 for(DataSnapshot place : snapshot.getChildren()){
-                    places.add(place.getValue(PlaceDetails.class));
-                    Log.d("place name",place.getKey());
+                    PlaceDetails p = place.getValue(PlaceDetails.class);
+                    places.add(p);
                     adapter=new CustomAdapterForMainRV(getActivity(), places);
                     rv.setAdapter(adapter);
                     progress.setVisibility(View.GONE);
@@ -89,7 +90,8 @@ public class MainFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Database Error:"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Database Error:",error.getDetails()+"\n"+error.getMessage());
             }
         });
     }

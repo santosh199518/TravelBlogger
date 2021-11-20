@@ -4,10 +4,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:gravity="center"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp"
-    android:textColor="#FFFFFF"
-    app:chipBackgroundColor="@color/teal_700">
+    android:gravity="center_vertical"
+    android:layout_alignParentStart="true"
+    android:paddingLeft="3dp"
+    android:paddingRight="3dp"
+    android:textColor="@color/purple_700"
+    app:chipBackgroundColor="@color/teal_200">
 
 </com.google.android.material.chip.Chip>

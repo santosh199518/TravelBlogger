@@ -9,15 +9,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UserData implements Serializable {
 
     private String username, password, email, imageUri;
-    String favouritePlaces, likedPlaces;
+    ArrayList<String> favouritePlaces, likedPlaces;
 
-    public UserData(String username, String password, String email, String imageUri, String favouritePlaces, String likedPlaces) {
+    public UserData(String username, String password, String email, String imageUri, ArrayList<String> favouritePlaces, ArrayList<String> likedPlaces) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -30,12 +33,13 @@ public class UserData implements Serializable {
         this.password = password;
         this.email = email;
         if (photo!=null) this.imageUri = photo;
-        favouritePlaces = "";
-        likedPlaces = "";
+        favouritePlaces = new ArrayList<>();
+        likedPlaces = new ArrayList<>();
     }
     UserData(){
-        favouritePlaces = "[]";
-        likedPlaces = "[]";
+        favouritePlaces = new ArrayList<>();
+        likedPlaces = new ArrayList<>();
+
     }
 
     public String getUsername() {
@@ -65,14 +69,6 @@ public class UserData implements Serializable {
     public String getImageUri() { return imageUri; }
 
     public void setImageUri(String imageUri) { this.imageUri = imageUri; }
-
-    public void addFavouritePlace(String value) {  }
-
-    public void removeFavouritePlace(String value) {  }
-
-    public void addLikedPlace(String value) {  }
-
-    public void removeLikedPlace(String value) {  }
 
     public String capitalize(@NonNull String str){
         String[] sub_strs = str.split(" ");
@@ -105,6 +101,10 @@ public class UserData implements Serializable {
         data.put(DBHelper.email, email);
         data.put(DBHelper.photo, imageUri);
         data.put(DBHelper.signed_in, "False");
+        if(favouritePlaces.isEmpty()) data.put(DBHelper.favouritePlaces, favouritePlaces.toString());
+        else  data.put(DBHelper.favouritePlaces, "[]");
+        if(likedPlaces.isEmpty()) data.put(DBHelper.like_places, likedPlaces.toString());
+        else  data.put(DBHelper.like_places, "[]");
         boolean result = db.insert(DBHelper.login_table_name, null, data) != -1;
         if (result) db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
     }
@@ -112,13 +112,13 @@ public class UserData implements Serializable {
     public void uploadFavouritePlacesToDatabase(Context context){
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+ favouritePlaces + "' WHERE "+DBHelper.email+"='"+email+"'");
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.favouritePlaces+" = '"+ favouritePlaces.toString() + "' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
     public void uploadLikedPlacesToDatabase(Context context){
         DBHelper helper = new DBHelper(context);
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.like_places+" = '"+ likedPlaces + "' WHERE "+DBHelper.email+"='"+email+"'");
+        db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.like_places+" = '"+ likedPlaces.toString() + "' WHERE "+DBHelper.email+"='"+email+"'");
     }
 
     public static UserData getUserDataFromDatabase(String email, String password, Context context){
@@ -130,8 +130,13 @@ public class UserData implements Serializable {
         c.moveToFirst();
 
         UserData data = new UserData(c.getString(c.getColumnIndex(DBHelper.name)), password, email, c.getString(c.getColumnIndex(DBHelper.photo)));
-        data.favouritePlaces = c.getString(c.getColumnIndex(DBHelper.favouritePlaces)).replace("[","").replace("]","");
-        data.likedPlaces = c.getString(c.getColumnIndex(DBHelper.like_places)).replace("[","").replace("]","");
+        data.favouritePlaces = new ArrayList<>();
+        String values = c.getString(c.getColumnIndex(DBHelper.favouritePlaces)).replace("[", "").replace("]", "");
+        if(!values.trim().isEmpty())
+            data.favouritePlaces.addAll(Arrays.asList(values.split(",")));
+        data.likedPlaces = new ArrayList<>();
+        values = c.getString(c.getColumnIndex(DBHelper.like_places)).replace("[", "").replace("]", "");
+        if (!values.trim().isEmpty()) data.likedPlaces.addAll(Arrays.asList(values.split(",")));
         c.close();
         db.execSQL("UPDATE "+ DBHelper.login_table_name+" SET "+DBHelper.signed_in+"= 'True' WHERE "+DBHelper.email+"='"+email+"'");
         return data;

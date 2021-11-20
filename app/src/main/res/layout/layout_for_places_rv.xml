@@ -16,9 +16,11 @@
             android:paddingEnd="5dp"
             android:gravity="center_vertical"
             android:layout_weight="1"
+            android:layout_gravity="center"
             android:textSize="18sp"
             android:text="Place Name"
             android:textColor="@color/purple_700"
+            android:background="@color/white"
             android:id="@+id/name_id"/>
         <RatingBar
             android:layout_width="wrap_content"
@@ -36,7 +38,7 @@
         android:drawableTint="#0000FF"
         android:drawablePadding="10dp"
         android:layout_below="@id/ll1"
-        android:textSize="13sp"
+        android:textSize="15sp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:text="Lotion of place"
@@ -54,6 +56,7 @@
         android:layout_height="75dp"
         android:id="@+id/favourite_iv"
         android:layout_below="@id/location_id"
+        android:layout_above="@+id/place_speciality_cg"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="10dp"
         android:src="@drawable/ic_heart"/>
@@ -64,33 +67,42 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/place_photo_id"
-        android:padding="10dp"/>
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_below="@id/place_speciality_cg"
         android:textColor="#0000FF"
-        android:textSize="12sp"
+        android:textSize="15sp"
         android:paddingStart="5dp"
         android:paddingEnd="5dp"
         android:text="This is the description of that place."
         android:id="@+id/description_id"/>
 
-    <View
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="4dp"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="@color/teal_200"
+        android:backgroundTint="@color/white"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:id="@+id/like_count"
         android:layout_below="@id/description_id"
-        android:background="@color/grey_400"/>
+        android:background="#40A33F"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/description_id"
+        android:layout_below="@id/like_count"
         android:layout_marginTop="5dp"
         android:id="@+id/ll2">
         <Button
             android:layout_width="0dp"
+            android:drawableLeft="@drawable/ic_like"
+            android:drawableTint="@color/teal_200"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/like"
@@ -101,21 +113,19 @@
             android:backgroundTint="#FFF"/>
         <Button
             android:layout_width="0dp"
+            android:drawableLeft="@drawable/ic_share"
+            android:drawableTint="#0000FF"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/comment"
-            android:id="@+id/comment_btn"
+            android:text="@string/share"
+            android:id="@+id/share"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:textColor="@color/purple_700"
             android:backgroundTint="#FFF"/>
 
     </LinearLayout>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:layout_below="@id/ll2"
-        android:background="@color/grey_400"/>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"

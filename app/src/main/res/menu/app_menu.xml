@@ -7,9 +7,9 @@
             android:icon="@drawable/ic_home"/>
 
         <item
-            android:title="SETTINGS"
-            android:id="@+id/settingID"
-            android:icon="@drawable/ic_setting"/>
+            android:title="Favourite Places"
+            android:id="@+id/favourite_placesID"
+            android:icon="@drawable/heart"/>
 
     </group>
     <item android:title="Communicate">

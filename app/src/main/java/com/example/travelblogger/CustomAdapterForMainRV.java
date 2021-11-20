@@ -2,7 +2,6 @@ package com.example.travelblogger;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.net.Uri;
 import android.util.Log;
@@ -19,11 +18,12 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
 
 public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterForMainRV.DataHolder> {
 
@@ -48,29 +48,49 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         holder.name.setText(d1.getName());
         holder.location.setText(d1.getLocation());
         holder.description.setText(d1.getDescription());
+        if(d1.getLikeCount()>0){
+            holder.likeCount.setVisibility(View.VISIBLE);
+            holder.likeCount.setText("Liked by "+d1.getLikeCount()+" others");
+        }
+        else holder.likeCount.setVisibility(View.GONE);
         ArrayList<String> keySet = new ArrayList<>(d1.getImages().keySet());
         if(!d1.getImages().isEmpty()) Picasso.get().load(d1.getImages().get(keySet.get(0))).placeholder(R.drawable.ic_add_photo).into(holder.photo);
         holder.rb.setRating(d1.getRating());
 
         holder.cg.removeAllViews();
-
+        int i=0;
         for(String title: d1.getSpeciality().values()){
-            Chip chip =(Chip) LayoutInflater.from(context).inflate(R.layout.custom_chip_view, null, false);
-            chip.setCloseIconVisible(false);
-            chip.setTextAlignment(Chip.TEXT_ALIGNMENT_TEXT_START);
-            chip.setText(title);
-            holder.cg.addView(chip);
+            if(i<2) {
+                i++;
+                Chip chip = (Chip) LayoutInflater.from(context).inflate(R.layout.custom_chip_view, null, false);
+                chip.setCloseIconVisible(false);
+                chip.setTextAlignment(Chip.TEXT_ALIGNMENT_TEXT_START);
+                chip.setText(title);
+                holder.cg.addView(chip);
+            }
         }
-
+        i=0;
         UserData user = ((MainActivity) context).user;
-
-        if(Arrays.asList(user.likedPlaces).contains(al.get(position).getName())){
-            holder.like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
-            holder.like.setTextColor(context.getResources().getColor(R.color.white));
+        Log.d("place", al.get(position).getName());
+        Log.d("liked", user.getUsername());
+        Log.d("liked", String.valueOf(user.likedPlaces.size()));
+//        for(String value:user.likedPlaces){
+//            Log.d("userLP",value);
+//        }
+//        for(String value:user.favouritePlaces){
+//            Log.d("userFP",value);
+//        }
+//        Log.d("LPR", String.valueOf(user.likedPlaces.contains(al.get(position).getName())));
+//        Log.d("FPR", String.valueOf(user.favouritePlaces.contains(al.get(position).getName())));
+        if(user.likedPlaces.contains(al.get(position).getName())){
+            if(d1.getLikeCount()==1)    holder.likeCount.setText("Liked by You");
+            else    holder.likeCount.setText("Liked by You and "+(d1.getLikeCount()-1)+" others");
+            holder.like.setBackgroundColor(context.getResources().getColor(R.color.purple_700,null));
+            holder.like.setTextColor(context.getResources().getColor(R.color.white,null));
             holder.clicked = true;
         }
 
-        if(Arrays.asList(user.favouritePlaces).contains(al.get(position).getName())){
+        if(user.favouritePlaces.contains(al.get(position).getName())){
             holder.full = false;
             holder.fillHeartAnimation();
         }
@@ -82,12 +102,11 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
     }
 
     class DataHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        TextView name, location, description;
+        TextView name, location, description, likeCount;
         ImageView photo, favourite;
         RatingBar rb;
-        Button like, comment;
+        Button like, share;
         ChipGroup cg;
-        Chip []chip = new Chip[5];
 
         AnimatedVectorDrawable emptyHeart;
         AnimatedVectorDrawable fillHeart;
@@ -101,6 +120,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
             location=itemView.findViewById(R.id.location_id);
             description=itemView.findViewById(R.id.description_id);
             description.setOnClickListener(this);
+            likeCount = itemView.findViewById(R.id.like_count);
 
             photo=itemView.findViewById(R.id.place_photo_id);
             photo.setOnClickListener(this);
@@ -109,8 +129,8 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
             like = itemView.findViewById(R.id.like_btn);
             like.setOnClickListener(this);
 
-            comment = itemView.findViewById(R.id.comment_btn);
-            comment.setOnClickListener(this);
+            share = itemView.findViewById(R.id.share);
+            share.setOnClickListener(this);
 
             favourite = itemView.findViewById(R.id.favourite_iv);
             favourite.setOnClickListener(this);
@@ -124,13 +144,16 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                     fillHeartAnimation();
                     UserData user = ((MainActivity) context).user;
                     if(full) {
-                        user.addFavouritePlace(al.get(getAdapterPosition()).getName());
+                        user.favouritePlaces.add(al.get(getAdapterPosition()).getName());
                         Toast.makeText(context, al.get(getAdapterPosition()).getName()+" added to Favourite List.", Toast.LENGTH_SHORT).show();
                     }
                     else {
-                        user.removeFavouritePlace(al.get(getAdapterPosition()).getName());
+                        user.favouritePlaces.remove(al.get(getAdapterPosition()).getName());
                         Toast.makeText(context, al.get(getAdapterPosition()).getName()+" removed from Favourite List.", Toast.LENGTH_SHORT).show();
                     }
+                    FirebaseDatabase.getInstance().getReference().child("Users")
+                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                            .child("favouritePlaces").setValue(user.favouritePlaces);
                     user.uploadFavouritePlacesToDatabase(context);
                     break;
 
@@ -138,27 +161,43 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                     int like_count = al.get(getAdapterPosition()).getLikeCount();
                     UserData user1 = ((MainActivity) context).user;
                     if (!clicked) {
-                        user1.addLikedPlace(al.get(getAdapterPosition()).getName());
+                        user1.likedPlaces.add(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(++like_count);
-                        like.setBackgroundColor(context.getResources().getColor(R.color.purple_700));
+                        like.setBackgroundColor(context.getResources().getColor(R.color.teal_200));
                         like.setTextColor(context.getResources().getColor(R.color.white));
                     }
                     else{
-                        user1.removeLikedPlace(al.get(getAdapterPosition()).getName());
+                        user1.likedPlaces.remove(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(--like_count);
                         like.setBackgroundColor(context.getResources().getColor(R.color.white));
-                        like.setTextColor(context.getResources().getColor(R.color.purple_700));
+                        like.setTextColor(context.getResources().getColor(R.color.teal_200));
                     }
-                    clicked = !clicked;
+                    FirebaseDatabase.getInstance().getReference().child("Users")
+                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                            .child("likedPlaces").setValue(user1.likedPlaces);
                     user1.uploadLikedPlacesToDatabase(context);
                     al.get(getAdapterPosition()).updateLikeCountToDataBase(context);
+                    clicked = !clicked;
                     break;
-
+                case R.id.share:
+                    Intent sendIntent = new Intent();
+                    sendIntent.putExtra(Intent.EXTRA_TITLE,al.get(getAdapterPosition()).getName());
+                    ArrayList<Uri> images = new ArrayList<>();
+                    for(String imagePath: al.get(getAdapterPosition()).getImages().values()){
+                        images.add(Uri.parse(imagePath));
+                    }
+                    sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                    sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM,images);
+                    sendIntent.setType("image/*");
+                    String app_url = "https://github.com/santosh199518/TravelBlogger/blob/master/app-debug.apk";
+                    sendIntent.putExtra(android.content.Intent.EXTRA_TEXT,app_url);
+                    Intent shareIntent = Intent.createChooser(sendIntent, "Share via");
+                    context.startActivity(shareIntent);
+                    break;
                 case R.id.name_id:
                 case R.id.location_id:
                 case R.id.description_id:
                 case R.id.place_photo_id:
-                case R.id.comment_btn:
                     goToShowPlaceActivity();
                     break;
             }

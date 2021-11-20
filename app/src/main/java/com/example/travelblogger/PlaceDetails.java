@@ -24,7 +24,7 @@ import java.util.HashMap;
 public class PlaceDetails implements Serializable {
 
     HashMap<String, String> images, comments;
-    HashMap<Integer, String>  speciality;
+    HashMap<String, String>  speciality;
     String name, description, location;
     String uploadedDate, uploadedBy;
     float rating;
@@ -33,12 +33,13 @@ public class PlaceDetails implements Serializable {
     PlaceDetails(){
         name = "Name of Place";
         description = "This is the description of that place";
-        location = "Kathmandu, Province 3, Nepal";
+        location = "This is location of place";
         speciality = new HashMap<>();
         images = new HashMap<>();
+        comments = new HashMap<>();
         rating = 0;
     }
-    public PlaceDetails(HashMap<String, String> images, HashMap<Integer, String> speciality, String name, String description, String location, HashMap<String, String> comments, String uploadedDate, String uploadedBy, float rating, int likeCount) {
+    public PlaceDetails(HashMap<String, String> images, HashMap<String, String> speciality, String name, String description, String location, HashMap<String, String> comments, String uploadedDate, String uploadedBy, float rating, int likeCount) {
         if (images == null) this.images = new HashMap<>();
         else this.images = images;
         if (speciality == null) this.speciality = new HashMap<>();
@@ -75,9 +76,9 @@ public class PlaceDetails implements Serializable {
 
     public void setDescription(String description) { this.description = description; }
 
-    public HashMap<Integer, String> getSpeciality() { return speciality; }
+    public HashMap<String, String> getSpeciality() { return speciality; }
 
-    public void setSpeciality(HashMap<Integer, String> speciality) { this.speciality = speciality; }
+    public void setSpeciality(HashMap<String, String> speciality) { this.speciality = speciality; }
 
     public float getRating() { return rating; }
 
@@ -86,6 +87,8 @@ public class PlaceDetails implements Serializable {
     public HashMap<String, String> getComments() { return comments; }
 
     public void setComments(HashMap<String, String> comments) { this.comments = comments; }
+
+    public void addComment(String uid, String comment){ this.comments.put(uid,comment); }
 
     public String getUploadedDate() { return uploadedDate; }
 
@@ -138,14 +141,14 @@ public class PlaceDetails implements Serializable {
                     photosUri.put("Photo_"+i,photosArray[i]);
                 }
 //                To retrieve arrays of specialities and convert them to Hashmap to create PlaceDetails Objects
-                HashMap<Integer, String> specialities = new HashMap<>();
+                HashMap<String, String> specialities = new HashMap<>();
                 str = c.getString(c.getColumnIndex(DBHelper.speciality));
                 String []set = str.split(":");
                 String[] key = set[0].replace("[","").replace("]","").split(",");
                 String[] values = set[1].replace("[","").replace("]","").split(",");
                 if(values.length == key.length)
                     for(int i=0; i<values.length; i++)
-                        specialities.put( Integer.parseInt(key[i].trim()), values[i]);
+                        specialities.put( key[i].trim(), values[i]);
 //                To retrieve arrays of comments and convert them to Hashmap to create PlaceDetails Objects
                 HashMap<String, String> comments = new HashMap<>();
                 str = c.getString(c.getColumnIndex(DBHelper.comment));
@@ -183,10 +186,9 @@ public class PlaceDetails implements Serializable {
         });
     }
 
-    public void addComment(Context context, UserData user, String comment){
-        this.comments.put(user.getEmail(),comment);
+
+    public void updateRating(int newRating) {
+        FirebaseDatabase.getInstance().getReference().child("Places Details")
+                .child(name).child("rating").setValue(newRating);
     }
-
-
-
 }

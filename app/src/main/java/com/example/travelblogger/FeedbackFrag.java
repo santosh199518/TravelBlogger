@@ -10,6 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RatingBar;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class FeedbackFrag extends Fragment {
 
@@ -53,17 +62,31 @@ public class FeedbackFrag extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                float []answers = new float[6];
-                answers[0] = r1.getRating();
-                answers[1] = r2.getRating();
-                answers[2] = r3.getRating();
-                answers[3] = r4.getRating();
-                answers[4] = r5.getRating();
-                answers[5] = r6.getRating();
-                DBHelper.updateFeedback(context, answers);
+                HashMap<String, Integer> feedbacks = new HashMap<>();
+                feedbacks.put(DBHelper.question1, (int)r1.getRating());
+                feedbacks.put(DBHelper.question2, (int)r2.getRating());
+                feedbacks.put(DBHelper.sub_question1, (int)r3.getRating());
+                feedbacks.put(DBHelper.sub_question2, (int)r4.getRating());
+                feedbacks.put(DBHelper.sub_question3, (int)r5.getRating());
+                feedbacks.put(DBHelper.sub_question4, (int)r6.getRating());
+                updateFeedbackInFirebase(feedbacks);
             }
         });
+    }
 
-
+    void updateFeedbackInFirebase(HashMap <String, Integer> feedbacks){
+        FirebaseDatabase.getInstance().getReference().child("Feedbacks")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(feedbacks)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        DBHelper.updateFeedback(context, feedbacks);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

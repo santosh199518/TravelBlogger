@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -67,12 +68,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
         query = "CREATE TABLE IF NOT EXISTS "+feedback_table_name+
                 "("+id +" INTEGER NOT NULL,"+
-                question1 +" DOUBLE NOT NULL, "+
-                question2 +" DOUBLE NOT NULL, "+
-                sub_question1 +" DOUBLE NOT NULL, "+
-                sub_question2 +" DOUBLE NOT NULL, "+
-                sub_question3 +" DOUBLE NOT NULL, "+
-                sub_question4 +" DOUBLE NOT NULL) ";
+                question1 +" INTEGER NOT NULL, "+
+                question2 +" INTEGER NOT NULL, "+
+                sub_question1 +" INTEGER NOT NULL, "+
+                sub_question2 +" INTEGER NOT NULL, "+
+                sub_question3 +" INTEGER NOT NULL, "+
+                sub_question4 +" INTEGER NOT NULL) ";
         db.execSQL(query);
 
         query = "CREATE TABLE IF NOT EXISTS "+places_table_name+
@@ -97,7 +98,7 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    static void updateFeedback(Context c, float []answers){
+    static void updateFeedback(Context c, HashMap<String, Integer> answers){
         DBHelper helper = new DBHelper(c);
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor cur = db.rawQuery("SELECT * FROM "+ login_table_name +" WHERE "+signed_in+"='True'",null);
@@ -105,26 +106,22 @@ public class DBHelper extends SQLiteOpenHelper {
         int user_id = cur.getInt(cur.getColumnIndex(id));
 
         ContentValues values = new ContentValues();
-        values.put(question1,answers[0]);
-        values.put(question2,answers[1]);
-        values.put(sub_question1,answers[2]);
-        values.put(sub_question2,answers[3]);
-        values.put(sub_question3,answers[4]);
-        values.put(sub_question4,answers[5]);
+        values.put(question1,answers.get(DBHelper.question1));
+        values.put(question1,answers.get(DBHelper.question2));
+        values.put(sub_question1,answers.get(DBHelper.sub_question1));
+        values.put(sub_question2,answers.get(DBHelper.sub_question2));
+        values.put(sub_question3,answers.get(DBHelper.sub_question3));
+        values.put(sub_question4,answers.get(DBHelper.sub_question4));
         cur = db.rawQuery("SELECT * FROM "+feedback_table_name+" WHERE ID ="+user_id,null);
         cur.moveToFirst();
         if(cur.getCount() == 0){
             values.put(id,user_id);
-            Log.d("ratings", Arrays.toString(answers)+"ID: "+user_id);
+            Log.d("ratings", Arrays.toString(answers.values().toArray())+"ID: "+user_id);
             if (db.insert(DBHelper.feedback_table_name, null, values) != -1)
                 Toast.makeText(c,"Thank You! for your valuable feedback.",Toast.LENGTH_SHORT).show();
         }
         else{
-            db.execSQL("UPDATE "+ feedback_table_name+" SET "+
-                    question1 + "= " + answers[0]+ ","+question2 + "= " + answers[1]+","+
-                    sub_question1+"= "+answers[2]+ ","+sub_question2+"= "+answers[3]+","+
-                    sub_question3+"= "+answers[4]+ ","+sub_question4+"= "+answers[5]+","+
-                    " WHERE "+id+"="+user_id);
+            db.update(feedback_table_name, values, id,new String[]{String.valueOf(user_id)});
             Toast.makeText(c,"Your feedback has been updated successfully.",Toast.LENGTH_SHORT).show();
         }
         cur.close();
