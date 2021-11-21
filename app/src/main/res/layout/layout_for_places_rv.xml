@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/cardview_dark_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,8 +20,7 @@
             android:layout_gravity="center"
             android:textSize="18sp"
             android:text="Place Name"
-            android:textColor="@color/purple_700"
-            android:background="@color/white"
+            android:textColor="@color/teal_200"
             android:id="@+id/name_id"/>
         <RatingBar
             android:layout_width="wrap_content"
@@ -34,21 +34,21 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_location"
-        android:drawableTint="#0000FF"
-        android:drawablePadding="10dp"
+        android:drawablePadding="5dp"
         android:layout_below="@id/ll1"
         android:textSize="15sp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="Lotion of place"
-        android:textColor="#000000"
-        android:id="@+id/location_id"/>
+        android:text="Location of place"
+        android:textColor="@color/teal_200"
+        android:id="@+id/location_id"
+        app:drawableLeftCompat="@drawable/ic_location"
+        app:drawableTint="@color/teal_200" />
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/location_id"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
         android:src="@drawable/ic_add_photo"
         android:id="@+id/place_photo_id"/>
     <ImageView
@@ -56,10 +56,11 @@
         android:layout_height="75dp"
         android:id="@+id/favourite_iv"
         android:layout_below="@id/location_id"
-        android:layout_above="@+id/place_speciality_cg"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
         android:src="@drawable/ic_heart"/>
+
     <com.google.android.material.chip.ChipGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -74,30 +75,37 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_below="@id/place_speciality_cg"
-        android:textColor="#0000FF"
+        android:textColor="@color/white"
         android:textSize="15sp"
-        android:paddingStart="5dp"
-        android:paddingEnd="5dp"
-        android:text="This is the description of that place."
         android:id="@+id/description_id"/>
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="See More"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:id="@+id/see_more"
+        android:layout_below="@id/description_id"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:id="@+id/separator3"
+        android:layout_below="@id/see_more"
+        android:background="@color/teal_200"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:textSize="15sp"
         android:textColor="@color/teal_200"
-        android:backgroundTint="@color/white"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:id="@+id/like_count"
-        android:layout_below="@id/description_id"
-        android:background="#40A33F"/>
-
+        android:layout_below="@id/separator3"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/like_count"
-        android:layout_marginTop="5dp"
         android:id="@+id/ll2">
         <Button
             android:layout_width="0dp"
@@ -123,13 +131,56 @@
             android:layout_marginEnd="5dp"
             android:textColor="@color/purple_700"
             android:backgroundTint="#FFF"/>
-
     </LinearLayout>
-
     <View
         android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:layout_marginTop="5dp"
-        android:background="#40A33F"
-        android:layout_below="@id/ll2"/>
+        android:layout_height="2dp"
+        android:layout_below="@id/ll2"
+        android:id="@+id/separator1"
+        android:background="@color/teal_200"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Uploaded By:"
+        android:id="@+id/uploaded_by"
+        android:textColor="@color/white"
+        android:layout_below="@id/separator1"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:cardCornerRadius="25dp"
+        android:elevation="8dp"
+        android:id="@+id/cv"
+        android:layout_margin="5dp"
+        android:layout_below="@id/uploaded_by"
+        android:layout_alignParentStart="true">
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/uploader_image"/>
+    </androidx.cardview.widget.CardView>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/cv"
+        android:layout_below="@id/uploaded_by"
+        android:layout_alignParentEnd="true"
+        android:textSize="18sp"
+        android:textColor="@color/teal_200"
+        android:id="@+id/uploader_name"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/uploader_name"
+        android:layout_alignParentEnd="true"
+        android:layout_alignStart="@id/uploader_name"
+        android:layout_alignEnd="@id/cv"
+        android:textSize="15sp"
+        android:textColor="@color/white"
+        android:id="@+id/uploaded_date"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_below="@id/cv"
+        android:background="@color/white"/>
 </RelativeLayout>

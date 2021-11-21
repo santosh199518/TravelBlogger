@@ -1,30 +1,26 @@
 package com.example.travelblogger;
 
 import static android.app.Activity.RESULT_OK;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 
 public class MainFragment extends Fragment {
@@ -34,6 +30,8 @@ public class MainFragment extends Fragment {
     CustomAdapterForMainRV adapter;
     RecyclerView rv;
     ProgressBar progress;
+    SearchView searchPlace;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +45,28 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main, container, false);
         progress = v.findViewById(R.id.progress);
+        searchPlace = v.findViewById(R.id.search_place);
+        searchPlace.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList <PlaceDetails> filteredPlaces = new ArrayList<>();
+                for(PlaceDetails place: places){
+                    if(place.getName().toLowerCase().contains(newText.toLowerCase()) ||
+                            place.getLocation().toLowerCase().contains(newText.toLowerCase()) ||
+                            place.getUploadedBy().toLowerCase().contains(newText.toLowerCase())){
+                        filteredPlaces.add(place);
+                    }
+                }
+                adapter = new CustomAdapterForMainRV(getContext(), filteredPlaces);
+                rv.setAdapter(adapter);
+                return false;
+            }
+        });
         FloatingActionButton add = v.findViewById(R.id.add_fab);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,6 +101,8 @@ public class MainFragment extends Fragment {
                 places =new ArrayList<>();
                 for(DataSnapshot place : snapshot.getChildren()){
                     PlaceDetails p = place.getValue(PlaceDetails.class);
+                    Log.d("tag","Speciality: "+p.getSpeciality().toString());
+                    Log.d("tag","Speciality: "+p.getComments().toString());
                     places.add(p);
                     adapter=new CustomAdapterForMainRV(getActivity(), places);
                     rv.setAdapter(adapter);

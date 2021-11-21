@@ -4,12 +4,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -33,7 +38,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.FirebaseCommonRegistrar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -44,6 +52,7 @@ import com.google.firebase.storage.UploadTask;
 import com.smarteist.autoimageslider.SliderView;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,16 +65,18 @@ import java.util.Locale;
 public class AddPlacesActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE_MULTIPLE = 100;
-    HashMap <String, String> imagesUri, uploadedImageUri, comments;
-    HashMap <String, String> specialitiesName;
+    private static final int REQUEST_IMAGE_CAPTURE = 101;
+    public static final int CAMERA_PERMISSION_CODE = 103;
+    public static final int READ_STORAGE_PERMISSION_CODE = 104;
+    public static final int WRITE_STORAGE_PERMISSION_CODE = 105;
+    HashMap <String, String> imagesUri, uploadedImageUri;
+    ArrayList <PlaceDetails> places;
+    UserData user;
+
+    TextInputEditText placeName, placeLocation, placeDescription, placeComment,placeSpeciality;
+    ExtendedFloatingActionButton addPhoto, openGallery, openCamera, close;
     SliderView placePhotos;
     RatingBar placeRating;
-    Button addPhotoBtn;
-    EditText placeName, placeLocation, placeDescription, placeComment;
-    AppCompatMultiAutoCompleteTextView placeSpeciality;
-    ChipGroup cg;
-    UserData user;
-    ArrayList <PlaceDetails> places;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,28 +90,27 @@ public class AddPlacesActivity extends AppCompatActivity {
         assert actionBar != null;
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         actionBar.setDisplayHomeAsUpEnabled(true);
-
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         ArrayList<Uri> selected_images = new ArrayList<>();
-        try {
-            if (requestCode == PICK_IMAGE_MULTIPLE && resultCode == RESULT_OK && null != data) {
-                if(data.getData()!=null){
-                    selected_images.add(data.getData());
-                }
-                else {
-                    if (data.getClipData() != null) {
-                        ClipData mClipData = data.getClipData();
-                        for (int i = 0; i < mClipData.getItemCount(); i++) {
-                            ClipData.Item item = mClipData.getItemAt(i);
-                            selected_images.add(item.getUri());
-                        }
+        if(data != null && resultCode == RESULT_OK) {
+            if (requestCode == PICK_IMAGE_MULTIPLE) {
+                //To Pick Single Image From Gallery
+                if (data.getData() != null)     selected_images.add(data.getData());
+                    //To Pick Multiple Image From Gallery
+                else if (data.getClipData() != null) {
+                    ClipData mClipData = data.getClipData();
+                    for (int i = 0; i < mClipData.getItemCount(); i++) {
+                        ClipData.Item item = mClipData.getItemAt(i);
+                        selected_images.add(item.getUri());
                     }
                 }
-                for(int i=0 ;i<selected_images.size();i++) {
+//                For resolving context and getting file-url from images
+                for (int i = 0; i < selected_images.size(); i++) {
+                    Log.d("AddImage","Selected Images Uri: "+selected_images.get(i).toString());
                     Cursor cursor = getContentResolver().query(selected_images.get(i), null, null, null, null);
                     cursor.moveToFirst();
                     String document_id = cursor.getString(0);
@@ -114,27 +124,42 @@ public class AddPlacesActivity extends AppCompatActivity {
                     cursor.close();
 
                     Uri uri = Uri.fromFile(new File(path));
-                    imagesUri.put("Image_" +(imagesUri.size()+1) , uri.toString());
+                    imagesUri.put("Image_" + (imagesUri.size() + 1), uri.toString());
                 }
-                Log.d("ImagesUri",imagesUri.toString());
 
-                SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(imagesUri.values()));
-                adapter.setButtonVisibility(true);
-//                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
-                placePhotos.setSliderAdapter(adapter);
-                placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-                placePhotos.setLayoutParams(params);
-                placePhotos.setScrollTimeInSec(2);
-                placePhotos.setAutoCycle(true);
-                placePhotos.startAutoCycle();
-            } else {
-                Toast.makeText(this, "You haven't picked Image", Toast.LENGTH_LONG).show();
+            } else if (requestCode == REQUEST_IMAGE_CAPTURE ) {
+//                For Capturing images and saving to gallery for getting file url to upload
+                String root = Environment.getExternalStorageDirectory().toString();
+                File myDir = new File(root + "/saved_images");
+                myDir.mkdirs();
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String fname = "IMG_"+ timeStamp +".jpg";
+                File file = new File(myDir, fname);
+                if (file.exists()) file.delete ();
+                Uri filePath = Uri.fromFile(file);
+
+                try {
+                    FileOutputStream out = new FileOutputStream(file);
+                    Bitmap bmp = (Bitmap) data.getExtras().get("data");
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.flush();
+                    out.close();
+                    imagesUri.put("Image_"+(imagesUri.size()+1), filePath.toString());
+                } catch (Exception e) {
+                    Log.d("SaveBitmapException",e.getMessage());
+                }
             }
-        } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(imagesUri.values()));
+            adapter.setButtonVisibility(true);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
+            placePhotos.setSliderAdapter(adapter);
+            placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+            placePhotos.setLayoutParams(params);
+            placePhotos.setScrollTimeInSec(2);
+            placePhotos.setAutoCycle(true);
+            placePhotos.startAutoCycle();
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        else Toast.makeText(this, "You haven't picked Image", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -157,14 +182,14 @@ public class AddPlacesActivity extends AppCompatActivity {
 
     void addPlace(){
         if(checkCredentials()){
+            String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
             String[] specialitiesArray = placeSpeciality.getText().toString().split(",");
             HashMap<String,String> specialities = new HashMap<>();
             HashMap<String,String> comments = new HashMap<>();
-            String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            comments.put(id, placeComment.getText().toString());
             for(int i=0; i<specialitiesArray.length; i++){
-                specialities.put(String.valueOf(i),specialitiesArray[i]);
+                specialities.put("Speciality_"+String.valueOf(i),specialitiesArray[i]);
             }
+            comments.put(id, placeComment.getText().toString());
 
             PlaceDetails place = new PlaceDetails(imagesUri, specialities,
                     placeName.getText().toString(),
@@ -172,15 +197,13 @@ public class AddPlacesActivity extends AppCompatActivity {
                     placeLocation.getText().toString(),
                     comments,
                     getUploadedDate(),
-                    user.getUsername(),
+                    id,
                     placeRating.getRating(),
                     getLikeCount());
 
             if (isNetworkConnected()) uploadToFirebaseDatabase(place);
             else
-                Toast.makeText(getApplicationContext(), "Sorry, Not able to Upload data",Toast.LENGTH_SHORT).show();
-
-
+                Toast.makeText(getApplicationContext(), "No Internet Connection",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -201,12 +224,12 @@ public class AddPlacesActivity extends AppCompatActivity {
             }
         }
         if(placeName.getText().toString().trim().isEmpty()){
-            placeName.setError("Shouldn't be empty");
+            placeName.setError("Name Shouldn't be empty");
             placeName.requestFocus();
             return false;
         }
         else if(placeLocation.getText().toString().trim().isEmpty()){
-            placeLocation.setError("Shouldn't be empty");
+            placeLocation.setError("Location Shouldn't be empty");
             placeLocation.requestFocus();
             return false;
         }
@@ -242,26 +265,95 @@ public class AddPlacesActivity extends AppCompatActivity {
         placePhotos = findViewById(R.id.place_photos);
         placeName = findViewById(R.id.place_name);
         placeLocation = findViewById(R.id.place_location);
-        cg = findViewById(R.id.place_speciality_cg);
         placeSpeciality = findViewById(R.id.place_speciality);
         placeDescription = findViewById(R.id.place_description);
         placeComment = findViewById(R.id.place_comment);
         placeRating = findViewById(R.id.place_rating);
-        addPhotoBtn = findViewById(R.id.add_photo_btn);
-        addPhotoBtn.setOnClickListener(new View.OnClickListener(){
+        addPhoto = findViewById(R.id.open_fab);
+        addPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkPermissions();
+                openCamera.setVisibility(View.VISIBLE);
+                openGallery.setVisibility(View.VISIBLE);
+                close.setVisibility(View.VISIBLE);
+                addPhoto.setVisibility(View.INVISIBLE);
+            }
+        });
+        openCamera = findViewById(R.id.open_camera_fab);
+        openCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        });
+        openGallery = findViewById(R.id.open_gallery_fab);
+        openGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
-
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_IMAGE_MULTIPLE);
             }
         });
+        close = findViewById(R.id.close_fab);
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCamera.setVisibility(View.INVISIBLE);
+                openGallery.setVisibility(View.INVISIBLE);
+                close.setVisibility(View.INVISIBLE);
+                addPhoto.setVisibility(View.VISIBLE);
+            }
+        });
         imagesUri = new HashMap<>();
         uploadedImageUri = new HashMap<>();
-        specialitiesName = new HashMap<>();
+    }
+
+    private void checkPermissions() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(AddPlacesActivity.this,
+                    new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(AddPlacesActivity.this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_PERMISSION_CODE);
+        }
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(AddPlacesActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_STORAGE_PERMISSION_CODE);
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Camera permission granted", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(this, "Camera permission denied+\n Cannot Open Camera", Toast.LENGTH_LONG).show();
+            }
+        }
+        if (requestCode == READ_STORAGE_PERMISSION_CODE){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage Permission Granted", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(this, "Read Storage permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
+        if (requestCode == WRITE_STORAGE_PERMISSION_CODE){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage permission granted", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     void uploadToFirebaseDatabase(PlaceDetails details){
@@ -284,18 +376,17 @@ public class AddPlacesActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<Uri> task) {
                                 uploadedImageUri.put(key, task.getResult().toString());
-                                DatabaseReference df = FirebaseDatabase.getInstance().getReference()
-                                    .child("Places Details").child(placeName.getText().toString());
-                                PlaceDetails details = new PlaceDetails(uploadedImageUri, specialitiesName,
-                                    placeName.getText().toString(), placeDescription.getText().toString(),
-                                    placeLocation.getText().toString(), comments, getUploadedDate(),
-                                    user.getEmail(), placeRating.getRating(), getLikeCount());
                                 if (imagesUri.size() == uploadedImageUri.size()) {
+                                    DatabaseReference df = FirebaseDatabase.getInstance().getReference()
+                                            .child("Places Details").child(placeName.getText().toString());
+                                    PlaceDetails newDetails = details;
+                                    newDetails.setImages(uploadedImageUri);
                                     pd.setMessage("Uploading Data");
                                     df.setValue(details).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
+                                                pd.dismiss();
                                                 finishUploading(details);
                                                 Toast.makeText(getApplicationContext(), "Place Uploaded Successfully", Toast.LENGTH_SHORT).show();
                                             }
@@ -303,6 +394,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                                     }).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
+                                            pd.dismiss();
                                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                                         }
                                     });
@@ -321,6 +413,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    pd.dismiss();
                 }
             });
         }

@@ -82,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
         TextView email=header.findViewById(R.id.email_tv);
         email.setText(user.getEmail());
         ImageView photo=header.findViewById(R.id.photo_iv);
-//        photo.setImageURI(Uri.parse(user.getImageUri()));
         Picasso.get().load(user.getImageUri()).placeholder(R.drawable.ic_person).into(photo);
         getSupportFragmentManager().beginTransaction().replace(R.id.fl,new MainFragment()).commit();
 

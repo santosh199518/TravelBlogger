@@ -9,7 +9,7 @@
         <item
             android:title="Favourite Places"
             android:id="@+id/favourite_placesID"
-            android:icon="@drawable/heart"/>
+            android:icon="@drawable/heart" />
 
     </group>
     <item android:title="Communicate">

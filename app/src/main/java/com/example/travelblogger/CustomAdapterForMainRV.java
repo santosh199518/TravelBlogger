@@ -2,9 +2,10 @@ package com.example.travelblogger;
 
 import android.content.Context;
 import android.content.Intent;
+import androidx.core.content.ContextCompat;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.net.Uri;
-import android.util.Log;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +17,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.logging.LogRecord;
 
 public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterForMainRV.DataHolder> {
 
@@ -71,18 +74,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         }
         i=0;
         UserData user = ((MainActivity) context).user;
-        Log.d("place", al.get(position).getName());
-        Log.d("liked", user.getUsername());
-        Log.d("liked", String.valueOf(user.likedPlaces.size()));
-//        for(String value:user.likedPlaces){
-//            Log.d("userLP",value);
-//        }
-//        for(String value:user.favouritePlaces){
-//            Log.d("userFP",value);
-//        }
-//        Log.d("LPR", String.valueOf(user.likedPlaces.contains(al.get(position).getName())));
-//        Log.d("FPR", String.valueOf(user.favouritePlaces.contains(al.get(position).getName())));
-        if(user.likedPlaces.contains(al.get(position).getName())){
+        if(user.likedPlaces != null && user.likedPlaces.contains(al.get(position).getName())){
             if(d1.getLikeCount()==1)    holder.likeCount.setText("Liked by You");
             else    holder.likeCount.setText("Liked by You and "+(d1.getLikeCount()-1)+" others");
             holder.like.setBackgroundColor(context.getResources().getColor(R.color.purple_700,null));
@@ -90,10 +82,25 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
             holder.clicked = true;
         }
 
-        if(user.favouritePlaces.contains(al.get(position).getName())){
+        if(user.favouritePlaces!=null && user.favouritePlaces.contains(al.get(position).getName())){
             holder.full = false;
             holder.fillHeartAnimation();
         }
+        holder.uploadedDate.setText(al.get(position).getUploadedDate());
+        DatabaseReference df = FirebaseDatabase.getInstance().getReference().child("Users").child(al.get(position).getUploadedBy());
+        Task <DataSnapshot> task = df.get();
+        while(!task.isComplete()){
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            },1000);
+        }
+        UserData uploader = task.getResult().getValue(UserData.class);
+        holder.uploaderName.setText(uploader.getUsername());
+        Picasso.get().load(uploader.getImageUri()).placeholder(R.drawable.ic_person).into(holder.uploaderImage);
     }
 
     @Override
@@ -102,8 +109,8 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
     }
 
     class DataHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        TextView name, location, description, likeCount;
-        ImageView photo, favourite;
+        TextView name, location, description, likeCount, uploaderName, uploadedDate;
+        ImageView photo, favourite, uploaderImage;
         RatingBar rb;
         Button like, share;
         ChipGroup cg;
@@ -135,6 +142,10 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
             favourite = itemView.findViewById(R.id.favourite_iv);
             favourite.setOnClickListener(this);
             cg =itemView.findViewById(R.id.place_speciality_cg);
+
+            uploaderName = itemView.findViewById(R.id.uploader_name);
+            uploaderImage = itemView.findViewById(R.id.uploader_image);
+            uploadedDate = itemView.findViewById(R.id.uploaded_date);
         }
 
         @Override
@@ -143,6 +154,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                 case R.id.favourite_iv:
                     fillHeartAnimation();
                     UserData user = ((MainActivity) context).user;
+                    if(user.favouritePlaces == null) user.favouritePlaces = new ArrayList<>();
                     if(full) {
                         user.favouritePlaces.add(al.get(getAdapterPosition()).getName());
                         Toast.makeText(context, al.get(getAdapterPosition()).getName()+" added to Favourite List.", Toast.LENGTH_SHORT).show();
@@ -160,6 +172,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                 case R.id.like_btn:
                     int like_count = al.get(getAdapterPosition()).getLikeCount();
                     UserData user1 = ((MainActivity) context).user;
+                    if(user1.likedPlaces == null) user1.likedPlaces = new ArrayList<>();
                     if (!clicked) {
                         user1.likedPlaces.add(al.get(getAdapterPosition()).getName());
                         al.get(getAdapterPosition()).setLikeCount(++like_count);
@@ -172,7 +185,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                         like.setBackgroundColor(context.getResources().getColor(R.color.white));
                         like.setTextColor(context.getResources().getColor(R.color.teal_200));
                     }
-                    FirebaseDatabase.getInstance().getReference().child("Users")
+                    Task task = FirebaseDatabase.getInstance().getReference().child("Users")
                             .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("likedPlaces").setValue(user1.likedPlaces);
                     user1.uploadLikedPlacesToDatabase(context);
@@ -205,7 +218,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
 
         private void fillHeartAnimation() {
 
-            emptyHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_empty);
+            emptyHeart = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_heart_empty);
             fillHeart = (AnimatedVectorDrawable) AppCompatResources.getDrawable(context, R.drawable.avd_heart_fill);
             AnimatedVectorDrawable drawable = full ? emptyHeart : fillHeart;
             favourite.setImageDrawable(drawable);

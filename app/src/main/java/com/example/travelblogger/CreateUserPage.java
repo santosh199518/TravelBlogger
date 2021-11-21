@@ -275,9 +275,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             String root = Environment.getExternalStorageDirectory().toString();
             File myDir = new File(root + "/saved_images");
             myDir.mkdirs();
-
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String fname = "IMG_"+ timeStamp +".jpg";
+            String fname = name.getText().toString()+"_Profile_Picture.jpg";
 
             File file = new File(myDir, fname);
             if (file.exists()) file.delete ();
@@ -286,7 +284,6 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             try {
                 FileOutputStream out = new FileOutputStream(file);
                 bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                Log.d("SaveBitmap","File Compressed");
                 out.flush();
                 out.close();
             } catch (Exception e) {
