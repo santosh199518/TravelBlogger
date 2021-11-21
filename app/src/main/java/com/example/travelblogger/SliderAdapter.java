@@ -12,10 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.AnyRes;
 import androidx.annotation.NonNull;
@@ -66,7 +68,6 @@ public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapter
 
     @Override
     public void onBindViewHolder(SliderAdapterViewHolder viewHolder, final int position) {
-
         Picasso.get().load(mSliderItems.get(position)).placeholder(R.drawable.ic_add_photo)
                     .into(viewHolder.imageViewBackground);
         if (isButtonVisible) {

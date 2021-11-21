@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -38,6 +39,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.smarteist.autoimageslider.SliderView;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.PicassoProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +70,8 @@ public class ShowPlaceActivity extends AppCompatActivity {
         initializeView();
         place = (PlaceDetails)getIntent().getSerializableExtra("place");
         SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(place.getImages().values()));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
+        placePhotos.setLayoutParams(params);
         placePhotos.setSliderAdapter(adapter);
         placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
         placePhotos.setScrollTimeInSec(2);
