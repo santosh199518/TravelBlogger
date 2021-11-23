@@ -1,2 +1,2 @@
-# TravelBlogger: 
-An Android App for publishing and exploring all the beautiful places by sharing your experience and moments.
+# Travel Blogger: 
+Blogging Android App for publishing your thoughts regarding any places you visited or like to visit and for exploring all the beautiful places with help of others experience and moments.
