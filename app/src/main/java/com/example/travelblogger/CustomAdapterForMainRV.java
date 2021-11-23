@@ -185,13 +185,14 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                         like.setBackgroundColor(context.getResources().getColor(R.color.white));
                         like.setTextColor(context.getResources().getColor(R.color.teal_200));
                     }
-                    Task task = FirebaseDatabase.getInstance().getReference().child("Users")
+                    FirebaseDatabase.getInstance().getReference().child("Users")
                             .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("likedPlaces").setValue(user1.likedPlaces);
                     user1.uploadLikedPlacesToDatabase(context);
                     al.get(getAdapterPosition()).updateLikeCountToDataBase(context);
                     clicked = !clicked;
                     break;
+
                 case R.id.share:
                     Intent sendIntent = new Intent();
                     sendIntent.putExtra(Intent.EXTRA_TITLE,al.get(getAdapterPosition()).getName());

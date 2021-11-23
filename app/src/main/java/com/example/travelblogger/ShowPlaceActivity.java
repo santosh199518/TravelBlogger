@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -50,10 +51,10 @@ public class ShowPlaceActivity extends AppCompatActivity {
     SliderView placePhotos;
     ListView commentsLV;
     RatingBar placeRating, newRating;
-    TextView placeName, placeLocation, placeDescription;
+    TextView placeName, placeLocation, placeDescription, uploadedDate, uploaderEmail, uploaderName;
     TextInputEditText newComment;
     ChipGroup placeSpecialities;
-    ImageView addNewComment;
+    ImageView addNewComment, uploaderImage;
     CustomAdapterForComments commentAdapter;
     PlaceDetails place;
 
@@ -69,6 +70,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
 
         initializeView();
         place = (PlaceDetails)getIntent().getSerializableExtra("place");
+
         SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(place.getImages().values()));
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
         placePhotos.setLayoutParams(params);
@@ -79,18 +81,36 @@ public class ShowPlaceActivity extends AppCompatActivity {
         placePhotos.startAutoCycle();
         placeName.setText(place.getName());
         placeLocation.setText(place.getLocation());
+
+        Task <DataSnapshot> task = FirebaseDatabase.getInstance().getReference().child("Users").child(place.getUploadedBy()).get();
+        while(!task.isComplete()){
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() { }
+            },500);
+        }
+        UserData user = task.getResult().getValue(UserData.class);
+
         for(String value: place.getSpeciality().values()){
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_chip_view, null, false);
             chip.setCloseIconVisible(false);
             chip.setText(value);
             placeSpecialities.addView(chip);
         }
+
         placeDescription.setText(place.getDescription());
         placeRating.setRating(place.getRating());
+        uploaderEmail.setText(user.getEmail());
+        uploaderName.setText(user.getUsername());
+        Picasso.get().load(user.getImageUri()).placeholder(R.drawable.ic_person).into(uploaderImage);
+        uploadedDate.setText(place.getUploadedDate());
         ArrayList<String[]> comments = new ArrayList<>();
         HashMap<String, String> placeComments = place.getComments();
+        Log.d("All comments",placeComments.toString());
         if(placeComments!=null) {
             for (String key : placeComments.keySet()) {
+                Log.d("comment inside getView",placeComments.get(key));
                 comments.add(new String[]{key, place.getComments().get(key)});
             }
         }
@@ -106,6 +126,10 @@ public class ShowPlaceActivity extends AppCompatActivity {
         placeSpecialities = findViewById(R.id.place_specialities);
         placeDescription = findViewById(R.id.place_description);
         placeRating = findViewById(R.id.place_rating);
+        uploaderImage = findViewById(R.id.uploader_image);
+        uploaderName = findViewById(R.id.uploader_name);
+        uploaderEmail = findViewById(R.id.uploader_email);
+        uploadedDate = findViewById(R.id.uploaded_date);
         commentsLV = findViewById(R.id.comment_lv);
         newComment = findViewById(R.id.new_comment);
         newRating = findViewById(R.id.new_rating);
@@ -173,6 +197,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
             image = view.findViewById(R.id.user_photo);
             name = view.findViewById(R.id.user_name);
             comment = view.findViewById(R.id.user_comment);
+            comment.setText(comments.get(position)[1]);
             pb = view.findViewById(R.id.pb);
 
             DatabaseReference df = FirebaseDatabase.getInstance().getReference().child("Users").child(comments.get(position)[0]);
@@ -183,7 +208,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
                     assert user != null;
                     Picasso.get().load(Uri.parse(user.getImageUri())).placeholder(R.drawable.ic_add_photo).into(image);
                     name.setText(user.getUsername());
-                    comment.setText(comments.get(position)[1]);
+                    Log.d("comment inside getView",comments.get(position)[1]);
                     pb.setVisibility(View.GONE);
                 }
 

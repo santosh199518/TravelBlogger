@@ -40,8 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
@@ -70,7 +68,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         initializeView();
         if (getIntent().hasExtra("user data")) {
             try {
-                FromGoogleSignIn();
+                fromGoogleSignIn();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -153,7 +151,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             confirm_password.requestFocus();
             result=false;
         }
-        else if(imageUri == null){
+        else if(imageUri == null ){
             Toast.makeText(getApplicationContext(),"Please select a photo.",Toast.LENGTH_SHORT).show();
             result=false;
         }
@@ -225,7 +223,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void FromGoogleSignIn() throws ExecutionException, InterruptedException {
+    public void fromGoogleSignIn() throws ExecutionException, InterruptedException {
         UserData user = (UserData) getIntent().getSerializableExtra("user data");
         name.setText(user.getUsername());
         email.setText(user.getEmail());
@@ -275,7 +273,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             String root = Environment.getExternalStorageDirectory().toString();
             File myDir = new File(root + "/saved_images");
             myDir.mkdirs();
-            String fname = name.getText().toString()+"_Profile_Picture.jpg";
+            String fname = name.getText().toString().trim()+"_Profile_Picture.jpg";
 
             File file = new File(myDir, fname);
             if (file.exists()) file.delete ();

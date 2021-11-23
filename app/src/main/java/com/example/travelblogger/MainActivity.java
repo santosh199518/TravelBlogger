@@ -9,8 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,7 +31,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -47,8 +44,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-
-import okhttp3.internal.cache.DiskLruCache;
 
 public class MainActivity extends AppCompatActivity {
     private static final String CHANNEL_ID = "Notice";
@@ -146,9 +141,9 @@ public class MainActivity extends AppCompatActivity {
         else{
             if(item.getItemId() == R.id.report)
                 Toast.makeText(getApplicationContext(), "Report submitted",Toast.LENGTH_SHORT).show();
-            else if(item.getItemId() == R.id.sync){
-                if(isNetworkConnected()) synchronize();
-                else Toast.makeText(getApplicationContext(), "No Internet", Toast.LENGTH_LONG).show();
+            else if(item.getItemId() == R.id.notification_id){
+                Intent notification = new Intent(getApplicationContext(), MyNotification.class);
+                startActivity(notification);
             }
         }
         return true;
@@ -160,78 +155,22 @@ public class MainActivity extends AppCompatActivity {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    void synchronize(){
-        ArrayList<PlaceDetails> places = PlaceDetails.getPlaceDetailsFromDatabase(getApplicationContext());
-        HashMap<String,String> uploadedImageUri = new HashMap<>();
-        DatabaseReference dr = FirebaseDatabase.getInstance().getReference().child("Places Details");
-        dr.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                long count = snapshot.getChildrenCount();
-                long n=0;
-                for(PlaceDetails details: places){
-                    n++;
-                    if(!snapshot.hasChild(details.getName())){
-                        HashMap<String,String> imageUri = details.getImages();
-                        StorageReference sf = FirebaseStorage.getInstance().getReference().child("Place Images");
-                        for(String key : imageUri.keySet()){
-                            sf.child(user.getEmail()+"_"+key).putFile(Uri.parse(imageUri.get(key)))
-                                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                                        if(task.isSuccessful()) {
-                                            sf.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Uri> task) {
-                                                    uploadedImageUri.put(user.getEmail()+"_"+key,task.getResult().toString());
-                                                    details.setImages(uploadedImageUri);
-                                                    dr.child(details.getName()).setValue(details).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if(task.isSuccessful())
-                                                                createNotification( "Your place has been uploaded successfully", details);
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                                }
-                                });
-                        }
-                    }
-                    else if(count == n)
-                        Toast.makeText(getApplicationContext(), "No Data found to Upload", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    void createNotification( String message, PlaceDetails place){
-        int notificationId = 1;
-        Intent intent = new Intent(this, ShowPlaceActivity.class);
-        intent.putExtra("place",place);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.tour)
-                .setContentTitle(place.getName())
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(notificationId, builder.build());
-    }
+//    void createNotification( String message, PlaceDetails place){
+//        int notificationId = 1;
+//        Intent intent = new Intent(this, ShowPlaceActivity.class);
+//        intent.putExtra("place",place);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                .setSmallIcon(R.drawable.tour)
+//                .setContentTitle(place.getName())
+//                .setContentText(message)
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setContentIntent(pendingIntent)
+//                .setAutoCancel(true);
+//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+//        notificationManager.notify(notificationId, builder.build());
+//    }
 
     void checkPermissions(){
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&

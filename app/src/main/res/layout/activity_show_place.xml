@@ -86,10 +86,60 @@
                 android:paddingEnd="10dp"
                 android:textColor="#FFF"/>
             <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uploader_details"
+                android:text="Uploader Details"
+                android:textColor="@color/teal_200"
+                android:textSize="20sp"
+                android:layout_below="@id/place_description" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:cardCornerRadius="25dp"
+                android:elevation="10dp"
+                android:layout_below="@id/uploader_details"
+                android:layout_marginTop="5dp"
+                android:id="@+id/cv">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/uploader_image"/>
+            </androidx.cardview.widget.CardView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/cv"
+                android:layout_alignTop="@id/cv"
+                android:textSize="20sp"
+                android:layout_marginStart="5dp"
+                android:textColor="@color/teal_200"
+                android:id="@+id/uploader_name"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/uploader_name"
+                android:layout_alignStart="@id/uploader_name"
+                android:textColor="@color/white"
+                android:id="@+id/uploader_email"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/uploader_email"
+                android:layout_alignStart="@id/uploader_name"
+                android:textColor="@color/white"
+                android:id="@+id/uploaded_date"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:background="@color/teal_200"
+                android:layout_below="@id/uploaded_date"
+                android:id="@+id/separator1"/>
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@+id/new_rating"
-                android:layout_below="@id/place_description"
+                android:layout_below="@id/uploaded_date"
                 android:id="@+id/rate_title"
                 android:gravity="center"
                 android:textSize="20sp"
@@ -99,9 +149,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/rate_title"
-                android:layout_below="@id/place_description"
+                android:layout_below="@id/uploaded_date"
                 android:numStars="5"
                 android:id="@+id/new_rating"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -113,6 +164,7 @@
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
                 android:layout_below="@id/place_comments"
                 android:id="@+id/comment_lv"/>
             </RelativeLayout>

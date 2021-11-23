@@ -233,6 +233,11 @@ public class AddPlacesActivity extends AppCompatActivity {
             placeLocation.requestFocus();
             return false;
         }
+        else if(placeSpeciality.getText().toString().trim().isEmpty()){
+            placeSpeciality.setError("Location Shouldn't be empty");
+            placeSpeciality.requestFocus();
+            return false;
+        }
         else if(placeDescription.getText().toString().trim().isEmpty()){
             placeDescription.setError("Shouldn't be empty");
             placeDescription.requestFocus();

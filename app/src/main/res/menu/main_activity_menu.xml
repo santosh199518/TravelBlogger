@@ -9,9 +9,9 @@
         android:id="@+id/connectivity"/>
     <item
         android:title="Synchronize"
-        android:icon="@drawable/ic_refresh"
+        android:icon="@drawable/ic_email"
         app:showAsAction="always"
-        android:id="@+id/sync"/>
+        android:id="@+id/notification_id"/>
     <item
         android:title="Report"
         android:id="@+id/report"/>

@@ -9,13 +9,18 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,20 +36,20 @@ public class MainFragment extends Fragment {
     RecyclerView rv;
     ProgressBar progress;
     SearchView searchPlace;
+    TextView msg;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         places =new ArrayList<>();
-        getPlaceDetailsFromFirebase(getActivity());
-        adapter=new CustomAdapterForMainRV(getActivity(), places);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main, container, false);
         progress = v.findViewById(R.id.progress);
+        msg = v.findViewById(R.id.msg);
         searchPlace = v.findViewById(R.id.search_place);
         searchPlace.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -80,6 +85,8 @@ public class MainFragment extends Fragment {
         rv = v.findViewById(R.id.main_fragment_rv);
         LinearLayoutManager llm=new LinearLayoutManager(getActivity(),LinearLayoutManager.VERTICAL,false);
         rv.setLayoutManager(llm);
+        adapter=new CustomAdapterForMainRV(getActivity(), places);
+        getPlaceDetailsFromFirebase(getActivity());
         rv.setAdapter(adapter);
         return v;
     }
@@ -98,21 +105,20 @@ public class MainFragment extends Fragment {
         FirebaseDatabase.getInstance().getReference().child("Places Details").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                places =new ArrayList<>();
+                places = new ArrayList<>();
                 for(DataSnapshot place : snapshot.getChildren()){
                     PlaceDetails p = place.getValue(PlaceDetails.class);
-                    Log.d("tag","Speciality: "+p.getSpeciality().toString());
-                    Log.d("tag","Speciality: "+p.getComments().toString());
-                    places.add(p);
-                    adapter=new CustomAdapterForMainRV(getActivity(), places);
-                    rv.setAdapter(adapter);
                     progress.setVisibility(View.GONE);
+                    places.add(p);
                 }
+                if(!snapshot.exists()) msg.setVisibility(View.VISIBLE);
+                adapter = new CustomAdapterForMainRV(getContext(), places);
+                rv.setAdapter(adapter);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(context, "Database Error:"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.d("Database Error:",error.getDetails()+"\n"+error.getMessage());
             }
         });

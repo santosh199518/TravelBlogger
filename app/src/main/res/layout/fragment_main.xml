@@ -36,5 +36,16 @@
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/msg"
+            android:text="No Places to Show"
+            android:visibility="invisible"
+            android:textSize="40sp"
+            android:gravity="center"
+            android:background="@color/cardview_dark_background"
+            android:textColor="@color/teal_200"/>
     </RelativeLayout>
 </FrameLayout>

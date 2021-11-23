@@ -70,6 +70,14 @@ public class UserData implements Serializable {
 
     public void setImageUri(String imageUri) { this.imageUri = imageUri; }
 
+    public ArrayList<String> getFavouritePlaces() { return favouritePlaces; }
+
+    public void setFavouritePlaces(ArrayList<String> favouritePlaces) { this.favouritePlaces = favouritePlaces; }
+
+    public ArrayList<String> getLikedPlaces() { return likedPlaces; }
+
+    public void setLikedPlaces(ArrayList<String> likedPlaces) { this.likedPlaces = likedPlaces; }
+
     public String capitalize(@NonNull String str){
         String[] sub_strs = str.split(" ");
         StringBuilder result= new StringBuilder();

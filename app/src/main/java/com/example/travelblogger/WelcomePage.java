@@ -43,41 +43,29 @@ public class WelcomePage extends AppCompatActivity {
         sliderView.startAutoCycle();
 
         Handler h=new Handler();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String uid=null;
+        try {
+            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            Log.d("tag",uid);
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
         if(uid!=null) {
-            FirebaseDatabase.getInstance().getReference().child("Users").child(uid)
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            UserData user = snapshot.getValue(UserData.class);
-                            Task<DataSnapshot> getLikedTask =  FirebaseDatabase.getInstance().getReference()
-                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child("likedPlaces").get();
-                            Task <DataSnapshot> getFavouriteTask =  FirebaseDatabase.getInstance().getReference()
-                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child("favouritePlaces").get();
-                            do{
-                                Handler handler = new Handler();
-                                handler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(uid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    UserData user = snapshot.getValue(UserData.class);
+                    Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                    mainActivity.putExtra("user data", user);
+                    startActivity(mainActivity);
+                    finish();
+                }
 
-                                    }
-                                },1000);
-                            } while(!getFavouriteTask.isComplete() || !getLikedTask.isComplete());
-                            user.likedPlaces = (ArrayList<String>) getLikedTask.getResult().getValue();
-                            user.favouritePlaces = (ArrayList<String>) getFavouriteTask.getResult().getValue();
-                            Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-                            mainActivity.putExtra("user data", user);
-                            startActivity(mainActivity);
-                            finish();
-                        }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
+                }
+            });
         }
         else{
             UserData user = checkUserStatus();
