@@ -58,7 +58,7 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
         else holder.likeCount.setVisibility(View.GONE);
         ArrayList<String> keySet = new ArrayList<>(d1.getImages().keySet());
         if(!d1.getImages().isEmpty()) Picasso.get().load(d1.getImages().get(keySet.get(0))).placeholder(R.drawable.ic_add_photo).into(holder.photo);
-        holder.rb.setRating(d1.getRating());
+        holder.rb.setRating(d1.getRating().get("averageRating"));
 
         holder.cg.removeAllViews();
         int i=0;

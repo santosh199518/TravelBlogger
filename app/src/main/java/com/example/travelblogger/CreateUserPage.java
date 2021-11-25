@@ -27,8 +27,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -44,18 +47,18 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class CreateUserPage extends AppCompatActivity implements View.OnClickListener {
-
+//    Code for different purposes
     public static final int REQUEST_IMAGE_PICK = 101;
     public static final int REQUEST_IMAGE_CAPTURE = 102;
     public static final int CAMERA_PERMISSION_CODE = 103;
     public static final int READ_STORAGE_PERMISSION_CODE = 104;
     public static final int WRITE_STORAGE_PERMISSION_CODE = 105;
-
+//    Views listed in layout
     TextInputEditText name,password,confirm_password,email;
     TextView upload_photo_tv;
     ImageView photo;
     Button create_user;
-
+//    Variables for storing data
     Uri imageUri;
     Bitmap userPic;
     UserData user;
@@ -66,13 +69,8 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_create_user_page);
 
         initializeView();
-        if (getIntent().hasExtra("user data")) {
-            try {
-                fromGoogleSignIn();
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        if (getIntent().getBooleanExtra("FromGoogleSignIn",false))
+            fromGoogleSignIn();
     }
 
     @Override
@@ -223,14 +221,19 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void fromGoogleSignIn() throws ExecutionException, InterruptedException {
+    public void fromGoogleSignIn() {
         UserData user = (UserData) getIntent().getSerializableExtra("user data");
         name.setText(user.getUsername());
         email.setText(user.getEmail());
         imageUri = Uri.parse(user.getImageUri());
         DownloadImage download = new DownloadImage();
         download.execute(imageUri.toString());
-        userPic = download.get();
+        try{
+            userPic = download.get();
+        }catch (ExecutionException | InterruptedException e){
+            Log.d("Downloadimage",e.getMessage());
+            Toast.makeText(getApplicationContext(), "Unable to retrieve photo", Toast.LENGTH_SHORT).show();
+        }
         photo.setImageBitmap(userPic);
     }
 
@@ -351,6 +354,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
                                                     @Override
                                                     public void onFailure(@NonNull Exception e) {
                                                         Log.d("DatabaseFailure", e.getMessage());
+                                                        deleteFirebaseUser();
                                                         dialog.dismiss();
                                                     }
                                                 });
@@ -369,6 +373,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
+                                    deleteFirebaseUser();
                                     Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
                                     dialog.dismiss();
                                 }
@@ -383,6 +388,17 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
                     dialog.dismiss();
                 }
             });
+    }
+
+    void deleteFirebaseUser(){
+        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(),user.getPassword());
+        firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                firebaseUser.delete();
+            }
+        });
     }
 
     class DownloadImage extends AsyncTask<String, Void, Bitmap> {

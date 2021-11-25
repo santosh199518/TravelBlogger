@@ -4,18 +4,13 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:id="@+id/seperator"
-        android:background="@color/teal_200"/>
-
     <androidx.cardview.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:id="@+id/cv"
-        app:cardCornerRadius="25dp"
+        app:cardCornerRadius="15dp"
         android:elevation="10dp"
+        android:layout_alignParentStart="true"
         android:layout_centerVertical="true">
         <ImageView
             android:layout_width="match_parent"
@@ -28,16 +23,25 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@id/cv"
-        android:textSize="25sp"
+        android:textSize="18sp"
         android:gravity="center_vertical"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:textColor="@color/teal_200"
         android:id="@+id/user_name" />
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/user_name"
+        android:layout_alignStart="@id/user_name"
+        android:numStars="5"
+        style="@style/Widget.AppCompat.RatingBar.Indicator"
+        android:isIndicator="true"
+        android:id="@+id/user_rating"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/user_name"
+        android:layout_below="@id/user_rating"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@id/cv"
         android:id="@+id/user_comment"

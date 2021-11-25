@@ -196,6 +196,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
                 UserData user = new UserData(personName, null, personEmail, personPhoto.toString());
                 Intent mainActivity = new Intent(getApplicationContext(), CreateUserPage.class);
+                mainActivity.putExtra("FromGoogleSignIn", true);
                 mainActivity.putExtra("user data", user);
                 startActivity(mainActivity);
                 finish();

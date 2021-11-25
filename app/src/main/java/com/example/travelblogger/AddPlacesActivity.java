@@ -63,16 +63,17 @@ import java.util.HashSet;
 import java.util.Locale;
 
 public class AddPlacesActivity extends AppCompatActivity {
-
+//    code for different purposes
     private static final int PICK_IMAGE_MULTIPLE = 100;
     private static final int REQUEST_IMAGE_CAPTURE = 101;
     public static final int CAMERA_PERMISSION_CODE = 103;
     public static final int READ_STORAGE_PERMISSION_CODE = 104;
     public static final int WRITE_STORAGE_PERMISSION_CODE = 105;
+//    variables for storing values
     HashMap <String, String> imagesUri, uploadedImageUri;
     ArrayList <PlaceDetails> places;
     UserData user;
-
+//    Views in layout file for this activity
     TextInputEditText placeName, placeLocation, placeDescription, placeComment,placeSpeciality;
     ExtendedFloatingActionButton addPhoto, openGallery, openCamera, close;
     SliderView placePhotos;
@@ -83,85 +84,20 @@ public class AddPlacesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_places);
 
+//        initializing views with their respective ids
         initializeView();
+//        obtaining places list from main activity to remove redundancy of places
         places = (ArrayList<PlaceDetails>) getIntent().getSerializableExtra("places_data");
-        //For enabling cross button as home button
+//        For enabling cross button as home button
         ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ArrayList<Uri> selected_images = new ArrayList<>();
-        if(data != null && resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE_MULTIPLE) {
-                //To Pick Single Image From Gallery
-                if (data.getData() != null)     selected_images.add(data.getData());
-                    //To Pick Multiple Image From Gallery
-                else if (data.getClipData() != null) {
-                    ClipData mClipData = data.getClipData();
-                    for (int i = 0; i < mClipData.getItemCount(); i++) {
-                        ClipData.Item item = mClipData.getItemAt(i);
-                        selected_images.add(item.getUri());
-                    }
-                }
-//                For resolving context and getting file-url from images
-                for (int i = 0; i < selected_images.size(); i++) {
-                    Log.d("AddImage","Selected Images Uri: "+selected_images.get(i).toString());
-                    Cursor cursor = getContentResolver().query(selected_images.get(i), null, null, null, null);
-                    cursor.moveToFirst();
-                    String document_id = cursor.getString(0);
-                    document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
-                    cursor.close();
-                    cursor = getContentResolver().query(
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
-                    cursor.moveToFirst();
-                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                    cursor.close();
-
-                    Uri uri = Uri.fromFile(new File(path));
-                    imagesUri.put("Image_" + (imagesUri.size() + 1), uri.toString());
-                }
-
-            } else if (requestCode == REQUEST_IMAGE_CAPTURE ) {
-//                For Capturing images and saving to gallery for getting file url to upload
-                String root = Environment.getExternalStorageDirectory().toString();
-                File myDir = new File(root + "/saved_images");
-                myDir.mkdirs();
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                String fname = "IMG_"+ timeStamp +".jpg";
-                File file = new File(myDir, fname);
-                if (file.exists()) file.delete ();
-                Uri filePath = Uri.fromFile(file);
-
-                try {
-                    FileOutputStream out = new FileOutputStream(file);
-                    Bitmap bmp = (Bitmap) data.getExtras().get("data");
-                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                    out.flush();
-                    out.close();
-                    imagesUri.put("Image_"+(imagesUri.size()+1), filePath.toString());
-                } catch (Exception e) {
-                    Log.d("SaveBitmapException",e.getMessage());
-                }
-            }
-            SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(imagesUri.values()));
-            adapter.setButtonVisibility(true);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
-            placePhotos.setSliderAdapter(adapter);
-            placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-            placePhotos.setLayoutParams(params);
-            placePhotos.setScrollTimeInSec(2);
-            placePhotos.setAutoCycle(true);
-            placePhotos.startAutoCycle();
+        if(actionBar!=null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         }
-        else Toast.makeText(this, "You haven't picked Image", Toast.LENGTH_LONG).show();
     }
 
+
+//    For adding done menu in actionbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.action_menu, menu);
@@ -180,41 +116,37 @@ public class AddPlacesActivity extends AppCompatActivity {
         return true;
     }
 
+//    For creating PlaceDetails class from all details
     void addPlace(){
         if(checkCredentials()){
             String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            String[] specialitiesArray = placeSpeciality.getText().toString().split(",");
+
             HashMap<String,String> specialities = new HashMap<>();
-            HashMap<String,String> comments = new HashMap<>();
+            String[] specialitiesArray = placeSpeciality.getText().toString().split(",");
             for(int i=0; i<specialitiesArray.length; i++){
-                specialities.put("Speciality_"+String.valueOf(i),specialitiesArray[i]);
+                specialities.put("Speciality_"+i,specialitiesArray[i]);
             }
+
+            HashMap<String,String> comments = new HashMap<>();
             comments.put(id, placeComment.getText().toString());
+
+            HashMap<String,Float> ratings = new HashMap<>();
+            ratings.put("averageRating",placeRating.getRating());
+            ratings.put(id,placeRating.getRating());
 
             PlaceDetails place = new PlaceDetails(imagesUri, specialities,
                     placeName.getText().toString(),
                     placeDescription.getText().toString(),
                     placeLocation.getText().toString(),
-                    comments,
-                    getUploadedDate(),
-                    id,
-                    placeRating.getRating(),
-                    getLikeCount());
+                    comments, getUploadedDate(), id, ratings, getLikeCount());
 
             if (isNetworkConnected()) uploadToFirebaseDatabase(place);
-            else
-                Toast.makeText(getApplicationContext(), "No Internet Connection",Toast.LENGTH_SHORT).show();
+            else Toast.makeText(getApplicationContext(), "No Internet Connection",Toast.LENGTH_SHORT).show();
         }
     }
-
-    void finishUploading(PlaceDetails place){
-        Intent data = new Intent();
-        data.putExtra("new_place",place);
-        setResult(RESULT_OK, data);
-        finish();
-    }
+//    Checking weather any field is empty or not and if place already exits or not
     boolean checkCredentials() {
-        String name = placeName.getText().toString();
+        String name = placeName.getText().toString().trim();
         boolean sameName = false;
         int index = 0;
         for(int i=0; i<places.size(); i++){
@@ -223,7 +155,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 index = i;
             }
         }
-        if(placeName.getText().toString().trim().isEmpty()){
+        if(name.isEmpty()){
             placeName.setError("Name Shouldn't be empty");
             placeName.requestFocus();
             return false;
@@ -275,6 +207,7 @@ public class AddPlacesActivity extends AppCompatActivity {
         placeComment = findViewById(R.id.place_comment);
         placeRating = findViewById(R.id.place_rating);
         addPhoto = findViewById(R.id.open_fab);
+//        For enabling user to add photo using floating action menu
         addPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -285,6 +218,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 addPhoto.setVisibility(View.INVISIBLE);
             }
         });
+//        To open camera to capture photo and add it
         openCamera = findViewById(R.id.open_camera_fab);
         openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,6 +227,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
         });
+//        To open gallery to add image
         openGallery = findViewById(R.id.open_gallery_fab);
         openGallery.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -304,6 +239,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_IMAGE_MULTIPLE);
             }
         });
+//        To close the menu of floating action buttons
         close = findViewById(R.id.close_fab);
         close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -335,32 +271,88 @@ public class AddPlacesActivity extends AppCompatActivity {
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Camera permission granted", Toast.LENGTH_LONG).show();
-            }
-            else {
-                Toast.makeText(this, "Camera permission denied+\n Cannot Open Camera", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == READ_STORAGE_PERMISSION_CODE){
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage Permission Granted", Toast.LENGTH_LONG).show();
-            }
-            else {
-                Toast.makeText(this, "Read Storage permission denied", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == WRITE_STORAGE_PERMISSION_CODE){
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage permission granted", Toast.LENGTH_LONG).show();
-            }
-            else {
-                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_LONG).show();
-            }
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Allow permission to add photo!", Toast.LENGTH_LONG).show();
+            openCamera.setVisibility(View.INVISIBLE);
+            openGallery.setVisibility(View.INVISIBLE);
+            close.setVisibility(View.INVISIBLE);
+            addPhoto.setVisibility(View.VISIBLE);
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ArrayList<Uri> selected_images = new ArrayList<>();
+        if(data != null && resultCode == RESULT_OK) {
+//            For adding all images uri from gallery to list
+            if (requestCode == PICK_IMAGE_MULTIPLE) {
+                //To Pick Single Image From Gallery
+                if (data.getData() != null)     selected_images.add(data.getData());
+                    //To Pick Multiple Image From Gallery
+                else if (data.getClipData() != null) {
+                    ClipData mClipData = data.getClipData();
+                    for (int i = 0; i < mClipData.getItemCount(); i++) {
+                        ClipData.Item item = mClipData.getItemAt(i);
+                        selected_images.add(item.getUri());
+                    }
+                }
+//                For resolving context and getting file-url from images
+                for (int i = 0; i < selected_images.size(); i++) {
+                    Cursor cursor = getContentResolver().query(selected_images.get(i), null, null, null, null);
+                    cursor.moveToFirst();
+                    String document_id = cursor.getString(0);
+                    document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
+                    cursor.close();
+                    cursor = getContentResolver().query(
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
+                    cursor.moveToFirst();
+                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                    cursor.close();
+
+                    Uri uri = Uri.fromFile(new File(path));
+                    imagesUri.put("Image_" + (imagesUri.size() + 1), uri.toString());
+                }
+
+            }
+//            For Capturing images and saving to gallery for getting file url to upload
+            else if (requestCode == REQUEST_IMAGE_CAPTURE ) {
+                String root = Environment.getExternalStorageDirectory().toString();
+                File myDir = new File(root + "/saved_images");
+                myDir.mkdirs();
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String fname = "IMG_"+ timeStamp +".jpg";
+                File file = new File(myDir, fname);
+                if (file.exists()) file.delete ();
+                Uri filePath = Uri.fromFile(file);
+
+                try {
+                    FileOutputStream out = new FileOutputStream(file);
+                    Bitmap bmp = (Bitmap) data.getExtras().get("data");
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.flush();
+                    out.close();
+                    imagesUri.put("Image_"+(imagesUri.size()+1), filePath.toString());
+                } catch (Exception e) {
+                    Log.d("SaveBitmapException",e.getMessage());
+                }
+            }
+//            For showing all the images in sliderview
+            SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(imagesUri.values()));
+            adapter.setButtonVisibility(true);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
+            placePhotos.setSliderAdapter(adapter);
+            placePhotos.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+            placePhotos.setLayoutParams(params);
+            placePhotos.setScrollTimeInSec(2);
+            placePhotos.setAutoCycle(true);
+            placePhotos.startAutoCycle();
+        }
+        else Toast.makeText(this, "You haven't picked Image", Toast.LENGTH_LONG).show();
+    }
+
+    //    For uploading places details in firebase database
     void uploadToFirebaseDatabase(PlaceDetails details){
         for(String key: imagesUri.keySet()) {
             ProgressDialog pd = new ProgressDialog(AddPlacesActivity.this);
@@ -431,10 +423,16 @@ public class AddPlacesActivity extends AppCompatActivity {
     private String getUploadedDate() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
     }
-    public boolean isNetworkConnected(){
+    private boolean isNetworkConnected(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+    void finishUploading(PlaceDetails place){
+        Intent data = new Intent();
+        data.putExtra("new_place",place);
+        setResult(RESULT_OK, data);
+        finish();
     }
 
 }

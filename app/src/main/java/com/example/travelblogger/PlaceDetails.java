@@ -27,19 +27,22 @@ public class PlaceDetails implements Serializable {
     HashMap<String, String>  speciality;
     String name, description, location;
     String uploadedDate, uploadedBy;
-    float rating;
-    int likeCount = 0;
-
+    HashMap <String, Float> rating;
+    int likeCount;
+//    Creating constructors for PlaceDetails
     PlaceDetails(){
+        images = new HashMap<>();
+        comments = new HashMap<>();
+        speciality = new HashMap<>();
         name = "Name of Place";
         description = "This is the description of that place";
         location = "This is location of place";
-        speciality = new HashMap<>();
-        images = new HashMap<>();
-        comments = new HashMap<>();
-        rating = 0;
+        uploadedDate ="YYYY-MM-DD";
+        uploadedBy = "uploaderId";
+        rating = new HashMap<>();
+        likeCount = 0;
     }
-    public PlaceDetails(HashMap<String, String> images, HashMap<String, String> speciality, String name, String description, String location, HashMap<String, String> comments, String uploadedDate, String uploadedBy, float rating, int likeCount) {
+    public PlaceDetails(HashMap<String, String> images, HashMap<String, String> speciality, String name, String description, String location, HashMap<String, String> comments, String uploadedDate, String uploadedBy, HashMap<String,Float> rating, int likeCount) {
         if (images == null) this.images = new HashMap<>();
         else this.images = images;
         if (speciality == null) this.speciality = new HashMap<>();
@@ -53,7 +56,7 @@ public class PlaceDetails implements Serializable {
         this.rating = rating;
         this.likeCount = likeCount;
     }
-
+//    Getters and Setters for every elements
     public HashMap <String, String> getImages() {
         return this.images;
     }
@@ -80,15 +83,14 @@ public class PlaceDetails implements Serializable {
 
     public void setSpeciality(HashMap<String, String> speciality) { this.speciality = speciality; }
 
-    public float getRating() { return rating; }
+    public HashMap<String, Float> getRating() { return rating; }
 
-    public void setRating(float rating) { this.rating = rating; }
+    public void setRating(HashMap<String, Float> rating) { this.rating = rating; }
 
     public HashMap<String, String> getComments() { return comments; }
 
     public void setComments(HashMap<String, String> comments) { this.comments = comments; }
 
-    public void addComment(String uid, String comment){ this.comments.put(uid,comment); }
 
     public String getUploadedDate() { return uploadedDate; }
 
@@ -110,7 +112,7 @@ public class PlaceDetails implements Serializable {
         String s = speciality.keySet().toString()+":"+speciality.values().toString();
         data.put(DBHelper.speciality, s);
         data.put(DBHelper.location, location);
-        data.put(DBHelper.rating, rating);
+        data.put(DBHelper.rating, rating.keySet().toString()+":"+rating.values().toString());
         data.put(DBHelper.uploaded_by, userEmail);
         data.put(DBHelper.uploaded_date,uploadedDate);
         data.put(DBHelper.like_count, likeCount);
@@ -130,34 +132,14 @@ public class PlaceDetails implements Serializable {
         if(c.getCount() > 0){
             c.moveToFirst();
             do{
-                String str;
-                HashMap<String, String> photosUri = new HashMap<>();
-
-//                To retrieve arrays of photoUri and convert them to Hashmap to create PlaceDetails Objects
-                str = c.getString(c.getColumnIndex(DBHelper.photos));
-                str = str.replace("[","").replace("]","");
-                String[] photosArray = str.split(",");
-                for(int i=0; i<photosArray.length; i++){
-                    photosUri.put("Photo_"+i,photosArray[i]);
-                }
-//                To retrieve arrays of specialities and convert them to Hashmap to create PlaceDetails Objects
-                HashMap<String, String> specialities = new HashMap<>();
-                str = c.getString(c.getColumnIndex(DBHelper.speciality));
-                String []set = str.split(":");
-                String[] key = set[0].replace("[","").replace("]","").split(",");
-                String[] values = set[1].replace("[","").replace("]","").split(",");
-                if(values.length == key.length)
-                    for(int i=0; i<values.length; i++)
-                        specialities.put( key[i].trim(), values[i]);
-//                To retrieve arrays of comments and convert them to Hashmap to create PlaceDetails Objects
-                HashMap<String, String> comments = new HashMap<>();
-                str = c.getString(c.getColumnIndex(DBHelper.comment));
-                set = str.split(":");
-                key = set[0].replace("[","").replace("]","").split(",");
-                values = set[1].replace("[","").replace("]","").split(",");
-                for(int i=0; i<values.length; i++)
-                    comments.put( key[i], values[i]);
-
+//                To retrieve String of photoUri and convert them to Hashmap to create PlaceDetails Objects
+                HashMap<String, String> photosUri = getHashMapFromString(c.getString(c.getColumnIndex(DBHelper.photos)));
+//                To retrieve String of specialities and convert them to Hashmap to create PlaceDetails Objects
+                HashMap<String, String> specialities = getHashMapFromString(c.getString(c.getColumnIndex(DBHelper.speciality)));
+//                To retrieve String of comments and convert them to Hashmap to create PlaceDetails Objects
+                HashMap<String, String> comments = getHashMapFromString(c.getString(c.getColumnIndex(DBHelper.comment)));
+//                To retrieve String of rating and convert them to Hashmap to create PlaceDetails Objects
+                HashMap<String, Float> ratings = getHashMapFromString(c.getString(c.getColumnIndex(DBHelper.rating)));
                 PlaceDetails place = new PlaceDetails(photosUri, specialities,
                         c.getString(c.getColumnIndex(DBHelper.name)),
                         c.getString(c.getColumnIndex(DBHelper.description)),
@@ -165,12 +147,23 @@ public class PlaceDetails implements Serializable {
                         comments,
                         c.getString(c.getColumnIndex(DBHelper.uploaded_date)),
                         c.getString(c.getColumnIndex(DBHelper.uploaded_by)),
-                        c.getFloat(c.getColumnIndex(DBHelper.rating)),
+                        ratings,
                         c.getInt(c.getColumnIndex(DBHelper.like_count)));
                 places.add(place);
             }while(c.moveToNext());
         }
         return places;
+    }
+
+    public static HashMap getHashMapFromString(String str){
+        if(str==null || str.isEmpty()) return new HashMap<>();
+        HashMap map = new HashMap<>();
+        String[] set = str.split(":");
+        String[]key = set[0].replace("[","").replace("]","").split(",");
+        String[] values = set[1].replace("[","").replace("]","").split(",");
+        for(int i=0; i<values.length; i++)
+            map.put( key[i], values[i]);
+        return map;
     }
 
     public void updateLikeCountToDataBase(Context context){
@@ -186,9 +179,10 @@ public class PlaceDetails implements Serializable {
         });
     }
 
-
-    public void updateRating(int newRating) {
+    public void updateRatingAndComment(HashMap<String, String> comment, HashMap <String, Float> rating) {
         FirebaseDatabase.getInstance().getReference().child("Places Details")
-                .child(name).child("rating").setValue(newRating);
+                .child(name).child("rating").setValue(rating);
+        FirebaseDatabase.getInstance().getReference().child("Places Details")
+                .child(name).child("comments").setValue(comment);
     }
 }

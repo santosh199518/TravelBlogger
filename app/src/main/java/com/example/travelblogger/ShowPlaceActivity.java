@@ -2,11 +2,13 @@ package com.example.travelblogger;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -47,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ShowPlaceActivity extends AppCompatActivity {
-
     SliderView placePhotos;
     ListView commentsLV;
     RatingBar placeRating, newRating;
@@ -65,12 +66,12 @@ public class ShowPlaceActivity extends AppCompatActivity {
 
         //For enabling back button in actionbar
         ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayHomeAsUpEnabled(true);
-
+        if(actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
+//        For initializing view with their respective id
         initializeView();
+//        for taking place from main activity
         place = (PlaceDetails)getIntent().getSerializableExtra("place");
-
+//        For making sliderview for images
         SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(place.getImages().values()));
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
         placePhotos.setLayoutParams(params);
@@ -79,9 +80,11 @@ public class ShowPlaceActivity extends AppCompatActivity {
         placePhotos.setScrollTimeInSec(2);
         placePhotos.setAutoCycle(true);
         placePhotos.startAutoCycle();
+//        Setting place name
         placeName.setText(place.getName());
+//        Setting place location
         placeLocation.setText(place.getLocation());
-
+//        Obtaining uploader details from firebase database
         Task <DataSnapshot> task = FirebaseDatabase.getInstance().getReference().child("Users").child(place.getUploadedBy()).get();
         while(!task.isComplete()){
             Handler handler = new Handler();
@@ -90,30 +93,35 @@ public class ShowPlaceActivity extends AppCompatActivity {
                 public void run() { }
             },500);
         }
-        UserData user = task.getResult().getValue(UserData.class);
-
+        UserData uploader = task.getResult().getValue(UserData.class);
+//        Adding all the specialities in chips
         for(String value: place.getSpeciality().values()){
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_chip_view, null, false);
             chip.setCloseIconVisible(false);
             chip.setText(value);
             placeSpecialities.addView(chip);
         }
-
+//        Setting place description
         placeDescription.setText(place.getDescription());
-        placeRating.setRating(place.getRating());
-        uploaderEmail.setText(user.getEmail());
-        uploaderName.setText(user.getUsername());
-        Picasso.get().load(user.getImageUri()).placeholder(R.drawable.ic_person).into(uploaderImage);
+//        Setting place rating from overall ratings
+        placeRating.setRating(place.getRating().get("averageRating"));
+//        Setting uploader email
+        uploaderEmail.setText(uploader.getEmail());
+//        Setting uploaded name
+        uploaderName.setText(uploader.getUsername());
+//        Setting uploader image
+        Picasso.get().load(uploader.getImageUri()).placeholder(R.drawable.ic_person).into(uploaderImage);
+//        Setting uploaded date
         uploadedDate.setText(place.getUploadedDate());
+//        Collecting all users id, comments and rating and making a arraylist for comments listview
         ArrayList<String[]> comments = new ArrayList<>();
         HashMap<String, String> placeComments = place.getComments();
-        Log.d("All comments",placeComments.toString());
-        if(placeComments!=null) {
+        if(placeComments!=null && !placeComments.isEmpty()) {
             for (String key : placeComments.keySet()) {
-                Log.d("comment inside getView",placeComments.get(key));
-                comments.add(new String[]{key, place.getComments().get(key)});
+                comments.add(new String[]{key, placeComments.get(key), String.valueOf(place.getRating().get(key))});
             }
         }
+//        Creating adapter for comments listview
         commentAdapter = new CustomAdapterForComments(this, R.layout.layout_for_places_comments,comments);
         commentsLV.setAdapter(commentAdapter);
     }
@@ -133,21 +141,31 @@ public class ShowPlaceActivity extends AppCompatActivity {
         commentsLV = findViewById(R.id.comment_lv);
         newComment = findViewById(R.id.new_comment);
         newRating = findViewById(R.id.new_rating);
-        newRating.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-            @Override
-            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                int newRating = (int) (place.getRating()+rating)/2;
-                place.setRating(newRating);
-                place.updateRating(newRating);
-                commentAdapter.notifyDataSetChanged();
-            }
-        });
         addNewComment = findViewById(R.id.add_new_comment);
         addNewComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                place.addComment(FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                        newComment.getText().toString().trim());
+//                getting current userid
+                String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                checking if user has already commented or not and if commented then returning else adding
+                if(place.getComments().keySet().contains(currentUserId)) {
+                    Toast.makeText(ShowPlaceActivity.this, "Already added your comment for this place", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(newComment.getText().toString().trim().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Enter comment and rating for this place", Toast.LENGTH_LONG).show();
+                    newComment.requestFocus();
+                    return;
+                }
+//                Creating new hashmap for comments
+                HashMap<String, String> newComments = new HashMap<>(place.getComments());
+                newComments.put(currentUserId, newComment.getText().toString().trim());
+//                creating new hashmap for ratings
+                float overallRating = (place.getRating().get("averageRating")+newRating.getRating())/place.getRating().size();
+                HashMap<String, Float> newRatings = new HashMap<>(place.getRating());
+                newRatings.put("averageRating",overallRating);
+//                Updating new ratings and comments in database
+                place.updateRatingAndComment(newComments, newRatings);
                 newComment.setText("");
                 commentAdapter.notifyDataSetChanged();
             }
@@ -156,19 +174,20 @@ public class ShowPlaceActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        finishing the activity on back button pressed and returning to main activity
         if (item.getItemId() == android.R.id.home) {
             this.finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
+//    finishing the activity on back button pressed and returning to main activity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         finish();
     }
-
+//    Creating custom adapter for comment list view
     public class CustomAdapterForComments extends ArrayAdapter<String[]> {
         ArrayList <String[]> comments;
         Context context;
@@ -176,6 +195,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
         ImageView image;
         TextView name, comment;
         ProgressBar pb;
+        RatingBar rating;
 
         public CustomAdapterForComments(@NonNull Context context, int resource, @NonNull ArrayList<String[]> objects) {
             super(context, resource, objects);
@@ -192,14 +212,14 @@ public class ShowPlaceActivity extends AppCompatActivity {
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-//            return super.getView(position, convertView, parent);
+//            Creating view from layout and initializing views
             View view = LayoutInflater.from(context).inflate(resource, null);
             image = view.findViewById(R.id.user_photo);
             name = view.findViewById(R.id.user_name);
             comment = view.findViewById(R.id.user_comment);
-            comment.setText(comments.get(position)[1]);
+            rating = view.findViewById(R.id.user_rating);
             pb = view.findViewById(R.id.pb);
-
+//            Getting commenter details from database and showing in views
             DatabaseReference df = FirebaseDatabase.getInstance().getReference().child("Users").child(comments.get(position)[0]);
             df.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -208,7 +228,8 @@ public class ShowPlaceActivity extends AppCompatActivity {
                     assert user != null;
                     Picasso.get().load(Uri.parse(user.getImageUri())).placeholder(R.drawable.ic_add_photo).into(image);
                     name.setText(user.getUsername());
-                    Log.d("comment inside getView",comments.get(position)[1]);
+                    comment.setText(comments.get(position)[1]);
+                    rating.setRating(Float.parseFloat(comments.get(position)[2]));
                     pb.setVisibility(View.GONE);
                 }
 
