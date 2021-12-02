@@ -8,5 +8,43 @@
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
+    <style name="IndicatorRatingBar" parent="Widget.AppCompat.RatingBar.Indicator">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:numStars">5</item>
+        <item name="android:isIndicator">true</item>
+        <item name="android:progressTint">@color/golden</item>
+    </style>
+    <style name="CustomImageView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+    <style name="CustomEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:inputType">text</item>
+    </style>
+    <style name="CustomSliderView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="sliderAnimationDuration">600</item>
+        <item name="sliderAutoCycleDirection">back_and_forth</item>
+        <item name="sliderIndicatorAnimationDuration">600</item>
+        <item name="sliderIndicatorEnabled">true</item>
+        <item name="sliderIndicatorGravity">center_horizontal|bottom</item>
+        <item name="sliderIndicatorOrientation">horizontal</item>
+        <item name="sliderIndicatorPadding">3dp</item>
+        <item name="sliderIndicatorRadius">2dp</item>
+        <item name="sliderIndicatorSelectedColor">@color/purple_700</item>
+        <item name="sliderIndicatorUnselectedColor">@color/white</item>
+    </style>
+    <style name="CustomTextView" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/teal_200</item>
+
+    </style>
 
 </resources>

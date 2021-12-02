@@ -212,6 +212,8 @@ public class CustomAdapterForMainRV extends RecyclerView.Adapter<CustomAdapterFo
                 case R.id.location_id:
                 case R.id.description_id:
                 case R.id.place_photo_id:
+                case R.id.place_speciality_cg:
+                case R.id.see_more:
                     goToShowPlaceActivity();
                     break;
             }

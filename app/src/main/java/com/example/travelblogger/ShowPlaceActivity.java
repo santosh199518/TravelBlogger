@@ -45,6 +45,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.PicassoProvider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -116,9 +117,11 @@ public class ShowPlaceActivity extends AppCompatActivity {
 //        Collecting all users id, comments and rating and making a arraylist for comments listview
         ArrayList<String[]> comments = new ArrayList<>();
         HashMap<String, String> placeComments = place.getComments();
-        if(placeComments!=null && !placeComments.isEmpty()) {
+        if(placeComments!=null) {
             for (String key : placeComments.keySet()) {
-                comments.add(new String[]{key, placeComments.get(key), String.valueOf(place.getRating().get(key))});
+                String[] value = {key, placeComments.get(key), String.valueOf(place.getRating().get(key))};
+                Log.d("arraylist", Arrays.toString(value));
+                comments.add(value);
             }
         }
 //        Creating adapter for comments listview

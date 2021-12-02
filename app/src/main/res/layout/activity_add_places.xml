@@ -15,19 +15,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.smarteist.autoimageslider.SliderView
-                android:layout_width="match_parent"
+                style="@style/CustomSliderView"
                 android:layout_height="wrap_content"
-                android:id="@+id/place_photos"
-                app:sliderAnimationDuration="600"
-                app:sliderAutoCycleDirection="back_and_forth"
-                app:sliderIndicatorAnimationDuration="600"
-                app:sliderIndicatorEnabled="true"
-                app:sliderIndicatorGravity="center_horizontal|bottom"
-                app:sliderIndicatorOrientation="horizontal"
-                app:sliderIndicatorPadding="3dp"
-                app:sliderIndicatorRadius="2dp"
-                app:sliderIndicatorSelectedColor="@color/purple_700"
-                app:sliderIndicatorUnselectedColor="#FFF" />
+                android:id="@+id/place_photos" />
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,8 +25,7 @@
                 android:layout_below="@id/place_photos"
                 android:id="@+id/name_layout">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/CustomEditText"
                     android:id="@+id/place_name"
                     android:textSize="20sp"
                     android:hint="Name of Place or Spot"/>
@@ -48,8 +37,7 @@
                 android:id="@+id/location_layout"
                 android:layout_below="@id/name_layout">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/CustomEditText"
                     android:id="@+id/place_location"
                     android:textSize="20sp"
                     android:hint="Location (City/ District/ State/ Country)"/>
@@ -61,8 +49,7 @@
                 android:id="@+id/speciality_layout"
                 android:layout_below="@id/location_layout">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/CustomEditText"
                     android:id="@+id/place_speciality"
                     android:textSize="20sp"
                     android:hint="Specialities (Eg: Food, Historic, ...)" />
@@ -74,8 +61,7 @@
                 android:id="@+id/description_layout"
                 android:layout_below="@id/speciality_layout">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    style="@style/CustomEditText"
                     android:id="@+id/place_description"
                     android:textSize="20sp"
                     android:paddingStart="10dp"
@@ -89,20 +75,17 @@
                 android:id="@+id/experience_layout"
                 android:layout_below="@id/description_layout">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    style="@style/CustomEditText"
                     android:hint="How you felt about this place"
                     android:id="@+id/place_comment"
                     android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/CustomTextView"
                 android:layout_margin="5dp"
                 android:id="@+id/rating_question"
                 android:layout_below="@id/experience_layout"
                 android:text="How much would you rate this place:"
-                android:textSize="20sp"
                 android:textColor="@color/white"/>
             <RatingBar
                 android:layout_width="wrap_content"

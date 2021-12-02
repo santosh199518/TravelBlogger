@@ -2,13 +2,18 @@ package com.example.travelblogger;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -27,6 +32,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -37,10 +43,13 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Objects;
@@ -71,6 +80,8 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         initializeView();
         if (getIntent().getBooleanExtra("FromGoogleSignIn",false))
             fromGoogleSignIn();
+        else if (getIntent().getBooleanExtra("ToProfile",false))
+            toProfileView();
     }
 
     @Override
@@ -104,7 +115,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
     }
 
      void createUser() {
-        imageUri = saveBitmap(userPic);
+        imageUri = saveImage(userPic);
         if (checkCredentials()) {
             user = new UserData();
             String e = email.getText().toString().trim();
@@ -237,11 +248,20 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         photo.setImageBitmap(userPic);
     }
 
+    private void toProfileView() {
+        TextInputLayout tel = findViewById(R.id.password_layout);
+        tel.setVisibility(View.GONE);
+        create_user.setText("Update Details");
+        user = (UserData) getIntent().getSerializableExtra("user data");
+        Picasso.get().load(user.getImageUri()).placeholder(R.drawable.ic_person).into(photo);
+        name.setText(user.getUsername());
+        password.setText(user.getPassword());
+        email.setText(user.getEmail());
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(this,LoginPage.class);
-        startActivity(intent);
         finish();
     }
 
@@ -266,33 +286,43 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         return null;
     }
 
-    Uri saveBitmap(Bitmap bmp) {
-        Uri filePath = null;
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(CreateUserPage.this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_STORAGE_PERMISSION_CODE);
-        }
-        else {
-            String root = Environment.getExternalStorageDirectory().toString();
-            File myDir = new File(root + "/saved_images");
-            myDir.mkdirs();
-            String fname = name.getText().toString().trim()+"_Profile_Picture.jpg";
+    Uri saveImage(Bitmap bitmap){
+        OutputStream fos = null;
+        File imageFile = null;
+        Uri imageUri = null;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentResolver resolver = getApplicationContext().getContentResolver();
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "ProfilePic");
+                contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+                contentValues.put(
+                        MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "TravelBlogger");
+                imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 
-            File file = new File(myDir, fname);
-            if (file.exists()) file.delete ();
-            filePath = Uri.fromFile(file);
+                fos = resolver.openOutputStream(imageUri);
+            } else {
+                File imagesDir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_PICTURES).toString() + File.separator + "TravelBlogger");
 
-            try {
-                FileOutputStream out = new FileOutputStream(file);
-                bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                out.flush();
-                out.close();
-            } catch (Exception e) {
-                Log.d("SaveBitmapException",e.getMessage());
+                if (!imagesDir.exists())
+                    imagesDir.mkdir();
+
+                imageFile = new File(imagesDir, "ProfilePic" + ".jpg");
+                fos = new FileOutputStream(imageFile);
             }
-
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        }catch (IOException e){
+            Toast.makeText(getApplicationContext(),"Failed to save image",Toast.LENGTH_SHORT).show();
         }
-        return filePath;
+
+        if (imageFile != null) {
+            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{imageFile.toString()}, null, null);
+            imageUri = Uri.fromFile(imageFile);
+        }
+        return imageUri;
     }
 
     public void initializeView(){

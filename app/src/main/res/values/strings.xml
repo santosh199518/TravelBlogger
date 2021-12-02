@@ -39,4 +39,9 @@
     <string name="like">LIKE</string>
     <string name="share">Share</string>
     <string name="see_more"><u>See More</u></string>
+    <string name="about">About:</string>
+    <string name="uploader_details">Uploader Details</string>
+    <string name="comments">Comments</string>
+    <string name="share_your_experience_about_this_place">Share your experience about this place</string>
+    <string name="your_ratings_t">Your Ratings:\t</string>
 </resources>
