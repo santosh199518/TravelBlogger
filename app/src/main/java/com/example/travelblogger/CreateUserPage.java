@@ -115,7 +115,7 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
     }
 
      void createUser() {
-        imageUri = saveImage(userPic);
+        imageUri = saveImage(userPic, getApplicationContext());
         if (checkCredentials()) {
             user = new UserData();
             String e = email.getText().toString().trim();
@@ -152,6 +152,11 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         }
         else if(p.trim().isEmpty()){
             password.setError("Password cannot be empty");
+            password.requestFocus();
+            result = false;
+        }
+        else if(p.trim().length() <8 ){
+            password.setError("Password length < 8-character");
             password.requestFocus();
             result = false;
         }
@@ -242,7 +247,6 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
         try{
             userPic = download.get();
         }catch (ExecutionException | InterruptedException e){
-            Log.d("Downloadimage",e.getMessage());
             Toast.makeText(getApplicationContext(), "Unable to retrieve photo", Toast.LENGTH_SHORT).show();
         }
         photo.setImageBitmap(userPic);
@@ -279,20 +283,19 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             connection.connect();
             InputStream input = connection.getInputStream();
             return BitmapFactory.decodeStream(input);
-
         } catch (IOException e) {
-            Log.d("IOException",e.getMessage());
+            Log.i("IOException", e.getMessage());
         }
         return null;
     }
 
-    Uri saveImage(Bitmap bitmap){
+    static Uri saveImage(Bitmap bitmap, Context context){
         OutputStream fos = null;
         File imageFile = null;
         Uri imageUri = null;
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ContentResolver resolver = getApplicationContext().getContentResolver();
+                ContentResolver resolver = context.getContentResolver();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "ProfilePic");
                 contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
@@ -315,11 +318,11 @@ public class CreateUserPage extends AppCompatActivity implements View.OnClickLis
             fos.flush();
             fos.close();
         }catch (IOException e){
-            Toast.makeText(getApplicationContext(),"Failed to save image",Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"Failed to save image",Toast.LENGTH_SHORT).show();
         }
 
         if (imageFile != null) {
-            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{imageFile.toString()}, null, null);
+            MediaScannerConnection.scanFile(context, new String[]{imageFile.toString()}, null, null);
             imageUri = Uri.fromFile(imageFile);
         }
         return imageUri;

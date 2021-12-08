@@ -1,29 +1,24 @@
 package com.example.travelblogger;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.smarteist.autoimageslider.SliderView;
-
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
 public class WelcomePage extends AppCompatActivity {
 
@@ -42,15 +37,14 @@ public class WelcomePage extends AppCompatActivity {
         sliderView.setAutoCycle(true);
         sliderView.startAutoCycle();
 
-        Handler h=new Handler();
-        String uid=null;
+        Handler h = new Handler();
+        String uid = null;
         try {
             uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            Log.d("tag",uid);
         }catch (Exception e){
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        if(uid!=null) {
+        if(uid!=null && isNetworkConnected()) {
             FirebaseDatabase.getInstance().getReference().child("Users").child(uid).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -87,11 +81,18 @@ public class WelcomePage extends AppCompatActivity {
 
     }
 
+    private boolean isNetworkConnected(){
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
     public UserData checkUserStatus(){
         UserData user = null;
         DBHelper helper = new DBHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor c=db.rawQuery("SELECT * FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
+        Cursor c = db.rawQuery("SELECT * FROM "+DBHelper.login_table_name+" WHERE "+DBHelper.signed_in+"= 'True' ",null);
+
         if(c.getCount() != 0){
             c.moveToFirst();
             user = new UserData(c.getString(c.getColumnIndex(DBHelper.name)),
@@ -108,7 +109,7 @@ public class WelcomePage extends AppCompatActivity {
             c.moveToFirst();
             String like = c.getString(c.getColumnIndex(DBHelper.like_places));
             if(like!=null ) {
-                like.replace("[", "").replace("]", "");
+                like = like.replace("[", "").replace("]", "");
                 if (!like.trim().isEmpty()) user.likedPlaces.addAll(Arrays.asList(like.split(",")));
             }
             c.close();

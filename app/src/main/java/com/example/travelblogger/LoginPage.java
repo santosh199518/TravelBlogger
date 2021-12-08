@@ -2,7 +2,6 @@ package com.example.travelblogger;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -12,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -29,11 +27,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import java.util.Objects;
 
 public class LoginPage extends AppCompatActivity implements View.OnClickListener {
@@ -88,15 +83,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 
     //To allow user to sign-in if they have log-out or have already created an account.
     public void signIn(){
-        UserData user = UserData.getUserDataFromDatabase(email.getText().toString(),
-                password.getText().toString(),getApplicationContext());
-        if(user != null){
-            Intent mainActivity = new Intent(this, MainActivity.class);
-            mainActivity.putExtra("user data", user);
-            startActivity(mainActivity);
-            finish();
-        }
-        else if(isNetworkConnected()){
+        if(isNetworkConnected()){
             FirebaseAuth mAuth = FirebaseAuth.getInstance();
             mAuth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString())
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {

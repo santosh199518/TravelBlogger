@@ -68,10 +68,13 @@ public class ShowPlaceActivity extends AppCompatActivity {
         //For enabling back button in actionbar
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
+
 //        For initializing view with their respective id
         initializeView();
-//        for taking place from main activity
+
+//        for initializing place from main activity
         place = (PlaceDetails)getIntent().getSerializableExtra("place");
+
 //        For making sliderview for images
         SliderAdapter adapter = new SliderAdapter(this, new ArrayList<>(place.getImages().values()));
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500);
@@ -81,10 +84,13 @@ public class ShowPlaceActivity extends AppCompatActivity {
         placePhotos.setScrollTimeInSec(2);
         placePhotos.setAutoCycle(true);
         placePhotos.startAutoCycle();
+
 //        Setting place name
         placeName.setText(place.getName());
+
 //        Setting place location
         placeLocation.setText(place.getLocation());
+
 //        Obtaining uploader details from firebase database
         Task <DataSnapshot> task = FirebaseDatabase.getInstance().getReference().child("Users").child(place.getUploadedBy()).get();
         while(!task.isComplete()){
@@ -95,6 +101,7 @@ public class ShowPlaceActivity extends AppCompatActivity {
             },500);
         }
         UserData uploader = task.getResult().getValue(UserData.class);
+
 //        Adding all the specialities in chips
         for(String value: place.getSpeciality().values()){
             Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_chip_view, null, false);
@@ -104,16 +111,22 @@ public class ShowPlaceActivity extends AppCompatActivity {
         }
 //        Setting place description
         placeDescription.setText(place.getDescription());
+
 //        Setting place rating from overall ratings
         placeRating.setRating(place.getRating().get("averageRating"));
+
 //        Setting uploader email
         uploaderEmail.setText(uploader.getEmail());
+
 //        Setting uploaded name
         uploaderName.setText(uploader.getUsername());
+
 //        Setting uploader image
         Picasso.get().load(uploader.getImageUri()).placeholder(R.drawable.ic_person).into(uploaderImage);
+
 //        Setting uploaded date
         uploadedDate.setText(place.getUploadedDate());
+
 //        Collecting all users id, comments and rating and making a arraylist for comments listview
         ArrayList<String[]> comments = new ArrayList<>();
         HashMap<String, String> placeComments = place.getComments();
@@ -163,10 +176,12 @@ public class ShowPlaceActivity extends AppCompatActivity {
 //                Creating new hashmap for comments
                 HashMap<String, String> newComments = new HashMap<>(place.getComments());
                 newComments.put(currentUserId, newComment.getText().toString().trim());
+
 //                creating new hashmap for ratings
                 float overallRating = (place.getRating().get("averageRating")+newRating.getRating())/place.getRating().size();
                 HashMap<String, Float> newRatings = new HashMap<>(place.getRating());
                 newRatings.put("averageRating",overallRating);
+
 //                Updating new ratings and comments in database
                 place.updateRatingAndComment(newComments, newRatings);
                 newComment.setText("");

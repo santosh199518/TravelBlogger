@@ -3,9 +3,7 @@ package com.example.travelblogger;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ClipData;
@@ -14,22 +12,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -37,11 +30,9 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.FirebaseCommonRegistrar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -55,24 +46,23 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 
 public class AddPlacesActivity extends AppCompatActivity {
 //    code for different purposes
-    private static final int PICK_IMAGE_MULTIPLE = 100;
-    private static final int REQUEST_IMAGE_CAPTURE = 101;
-    public static final int CAMERA_PERMISSION_CODE = 103;
+    public static final int PICK_MULTIPLE_IMAGE_INTENT_CODE = 100;
+    public static final int IMAGE_CAPTURE_INTENT_CODE = 101;
+    public static final int ACCESS_CAMERA_PERMISSION_CODE = 103;
     public static final int READ_STORAGE_PERMISSION_CODE = 104;
     public static final int WRITE_STORAGE_PERMISSION_CODE = 105;
+
 //    variables for storing values
     HashMap <String, String> imagesUri, uploadedImageUri;
     ArrayList <PlaceDetails> places;
     UserData user;
+
 //    Views in layout file for this activity
     TextInputEditText placeName, placeLocation, placeDescription, placeComment,placeSpeciality;
     ExtendedFloatingActionButton addPhoto, openGallery, openCamera, close;
@@ -86,8 +76,10 @@ public class AddPlacesActivity extends AppCompatActivity {
 
 //        initializing views with their respective ids
         initializeView();
+
 //        obtaining places list from main activity to remove redundancy of places
         places = (ArrayList<PlaceDetails>) getIntent().getSerializableExtra("places_data");
+
 //        For enabling cross button as home button
         ActionBar actionBar = getSupportActionBar();
         if(actionBar!=null) {
@@ -147,41 +139,58 @@ public class AddPlacesActivity extends AppCompatActivity {
 //    Checking weather any field is empty or not and if place already exits or not
     boolean checkCredentials() {
         String name = placeName.getText().toString().trim();
-        boolean sameName = false;
+        String specialChar = "!@#$%^&*()-+=[]{}:;<>?,./|";
+        boolean nameExits = false, containSpecialCharacter = false;
         int index = 0;
-        for(int i=0; i<places.size(); i++){
-            if(places.get(i).getName().equals(name)){
-                sameName = true;
-                index = i;
+
+        if(!name.isEmpty()) {
+//        Checking weather the name already exits in database
+            for (int i = 0; i < places.size(); i++) {
+                if (places.get(i).getName().equals(name)) {
+                    nameExits = true;
+                    index = i;
+                    break;
+                }
+            }
+//        Checking weather the name contains any special character
+            for(char c: name.toCharArray()){
+                if(specialChar.contains(Character.toString(c)))
+                    containSpecialCharacter = true;
+                break;
             }
         }
+
         if(name.isEmpty()){
-            placeName.setError("Name Shouldn't be empty");
+            placeName.setError("Enter Name");
+            placeName.requestFocus();
+            return false;
+        }
+        else if(containSpecialCharacter){
+            placeName.setError("Special Character Found!");
             placeName.requestFocus();
             return false;
         }
         else if(placeLocation.getText().toString().trim().isEmpty()){
-            placeLocation.setError("Location Shouldn't be empty");
+            placeLocation.setError("Enter Location");
             placeLocation.requestFocus();
             return false;
         }
         else if(placeSpeciality.getText().toString().trim().isEmpty()){
-            placeSpeciality.setError("Location Shouldn't be empty");
+            placeSpeciality.setError("This field is Empty");
             placeSpeciality.requestFocus();
             return false;
         }
         else if(placeDescription.getText().toString().trim().isEmpty()){
-            placeDescription.setError("Shouldn't be empty");
+            placeDescription.setError("Write Something about this place.");
             placeDescription.requestFocus();
             return false;
         }
         else if(placeComment.getText().toString().trim().isEmpty()){
             placeComment.setError("share your experience here");
             placeComment.requestFocus();
-            Toast.makeText(getApplicationContext(),"", Toast.LENGTH_SHORT).show();
             return false;
         }
-        else if(sameName) {
+        else if(nameExits) {
             Snackbar message = Snackbar.make(placeName.getRootView(), "Name already registered", Snackbar.LENGTH_LONG);
             int finalIndex = index;
             message.setAction("SHOW", new View.OnClickListener() {
@@ -224,7 +233,7 @@ public class AddPlacesActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                startActivityForResult(takePictureIntent, IMAGE_CAPTURE_INTENT_CODE);
             }
         });
 //        To open gallery to add image
@@ -236,7 +245,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                 intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_IMAGE_MULTIPLE);
+                startActivityForResult(Intent.createChooser(intent,"Select Picture"), PICK_MULTIPLE_IMAGE_INTENT_CODE);
             }
         });
 //        To close the menu of floating action buttons
@@ -257,7 +266,7 @@ public class AddPlacesActivity extends AppCompatActivity {
     private void checkPermissions() {
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(AddPlacesActivity.this,
-                    new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+                    new String[]{Manifest.permission.CAMERA}, ACCESS_CAMERA_PERMISSION_CODE);
         }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(AddPlacesActivity.this,
@@ -286,7 +295,7 @@ public class AddPlacesActivity extends AppCompatActivity {
         ArrayList<Uri> selected_images = new ArrayList<>();
         if(data != null && resultCode == RESULT_OK) {
 //            For adding all images uri from gallery to list
-            if (requestCode == PICK_IMAGE_MULTIPLE) {
+            if (requestCode == PICK_MULTIPLE_IMAGE_INTENT_CODE) {
                 //To Pick Single Image From Gallery
                 if (data.getData() != null)     selected_images.add(data.getData());
                     //To Pick Multiple Image From Gallery
@@ -297,7 +306,7 @@ public class AddPlacesActivity extends AppCompatActivity {
                         selected_images.add(item.getUri());
                     }
                 }
-//                For resolving context and getting file-url from images
+//                For resolving context and getting file-URI from images
                 for (int i = 0; i < selected_images.size(); i++) {
                     Cursor cursor = getContentResolver().query(selected_images.get(i), null, null, null, null);
                     cursor.moveToFirst();
@@ -317,7 +326,7 @@ public class AddPlacesActivity extends AppCompatActivity {
 
             }
 //            For Capturing images and saving to gallery for getting file url to upload
-            else if (requestCode == REQUEST_IMAGE_CAPTURE ) {
+            else if (requestCode == IMAGE_CAPTURE_INTENT_CODE) {
                 String root = Environment.getExternalStorageDirectory().toString();
                 File myDir = new File(root + "/saved_images");
                 myDir.mkdirs();
@@ -423,16 +432,17 @@ public class AddPlacesActivity extends AppCompatActivity {
     private String getUploadedDate() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
     }
+
     private boolean isNetworkConnected(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
+
     void finishUploading(PlaceDetails place){
         Intent data = new Intent();
         data.putExtra("new_place",place);
         setResult(RESULT_OK, data);
         finish();
     }
-
 }
