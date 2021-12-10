@@ -1,7 +1,8 @@
 # Travel Blogger: 
 Blogging Android App for publishing your thoughts regarding any places you visited or like to visit and for exploring all the beautiful places with help of others experience and moments.
 
-![image](https://user-images.githubusercontent.com/35226999/145545984-c1d6fc74-ad9f-4e1d-b2f4-97096025bf47.png =400 x 800)
+![](https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png =250x250)
+![image](https://user-images.githubusercontent.com/35226999/145545984-c1d6fc74-ad9f-4e1d-b2f4-97096025bf47.png)
 ![image](https://user-images.githubusercontent.com/35226999/145546017-70eb6094-22d3-4398-b111-e8ac95e9e2f4.png)
 ![image](https://user-images.githubusercontent.com/35226999/145546043-54f365cb-6891-4c70-9b39-dde9fbb6edf6.png)
 ![image](https://user-images.githubusercontent.com/35226999/145546090-4c0d76da-fdbe-4388-b1fa-f1d5d434ce05.png)
